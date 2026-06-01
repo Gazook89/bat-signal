@@ -285,9 +285,7 @@ export class FeedPage extends HTMLElement {
 
     const selectAttempts = [
       () => supabase.from('locations_global').select('id').eq('name', destinationName).limit(1).maybeSingle(),
-      () => supabase.from('locations_global').select('id').ilike('name', destinationName).limit(1).maybeSingle(),
-      () => supabase.from('locations').select('id').eq('name', destinationName).limit(1).maybeSingle(),
-      () => supabase.from('locations').select('id').ilike('name', destinationName).limit(1).maybeSingle()
+      () => supabase.from('locations_global').select('id').ilike('name', destinationName).limit(1).maybeSingle()
     ]
 
     for (const attempt of selectAttempts) {
@@ -317,21 +315,7 @@ export class FeedPage extends HTMLElement {
         return data.id
       }
 
-      const legacy = await supabase
-        .from('locations')
-        .insert(payload)
-        .select('id')
-        .single()
-
-      if (!legacy.error && legacy.data?.id) {
-        return legacy.data.id
-      }
-
-      if (!error && data?.id) {
-        return data.id
-      }
-
-      lastError = legacy.error || error
+      lastError = error
     }
 
     // If insert failed due to an existing unique location, try one last read.
@@ -379,7 +363,6 @@ export class FeedPage extends HTMLElement {
 
     const userLocationMap = new Map()
     const globalLocationMap = new Map()
-    const legacyLocationMap = new Map()
 
     if (userLocationIds.length) {
       const { data: userLocations, error } = await supabase
@@ -420,20 +403,6 @@ export class FeedPage extends HTMLElement {
           globalLocationMap.set(row.id, row.name)
         }
       }
-
-      const unresolvedIds = allGlobalLocationIds.filter((id) => !globalLocationMap.has(id))
-      if (unresolvedIds.length) {
-        const { data: legacyLocations, error: legacyError } = await supabase
-          .from('locations')
-          .select('id, name')
-          .in('id', unresolvedIds)
-
-        if (!legacyError && legacyLocations) {
-          for (const row of legacyLocations) {
-            legacyLocationMap.set(row.id, row.name)
-          }
-        }
-      }
     }
 
     return signals.map((signal) => {
@@ -442,7 +411,7 @@ export class FeedPage extends HTMLElement {
         userLocation?.custom_name ||
         userLocation?.locations_global?.name ||
         (signal.location_id ? globalLocationMap.get(signal.location_id) : null) ||
-        (signal.location_id ? legacyLocationMap.get(signal.location_id) : null)
+        null
 
       return {
         ...signal,

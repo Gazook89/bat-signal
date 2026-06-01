@@ -43,7 +43,6 @@ grant select on table public.location_types to authenticated;
 grant select, insert, update, delete on table public.locations_global to authenticated;
 grant select, insert, delete on table public.locations_global_types to authenticated;
 grant select, insert, update, delete on table public.user_locations to authenticated;
-grant select, insert, update, delete on table public.locations to authenticated;
 
 -- Ensure RLS is on.
 alter table public.friendships enable row level security;
@@ -53,7 +52,6 @@ alter table public.location_types enable row level security;
 alter table public.locations_global enable row level security;
 alter table public.locations_global_types enable row level security;
 alter table public.user_locations enable row level security;
-alter table public.locations enable row level security;
 
 -- Remove ALL existing policies on these tables to avoid hidden legacy recursion.
 do $$
@@ -71,8 +69,7 @@ begin
         'location_types',
         'locations_global',
         'locations_global_types',
-        'user_locations',
-        'locations'
+        'user_locations'
       )
   loop
     execute format('drop policy if exists %I on %I.%I', rec.policyname, rec.schemaname, rec.tablename);
@@ -259,37 +256,11 @@ for delete
 to authenticated
 using (user_id = auth.uid());
 
--- Legacy public.locations compatibility policy.
-create policy "locations_select_authenticated"
-on public.locations
-for select
-to authenticated
-using (true);
-
-create policy "locations_insert_authenticated"
-on public.locations
-for insert
-to authenticated
-with check (true);
-
-create policy "locations_update_authenticated"
-on public.locations
-for update
-to authenticated
-using (true)
-with check (true);
-
-create policy "locations_delete_authenticated"
-on public.locations
-for delete
-to authenticated
-using (true);
-
 commit;
 
 -- Verification query:
 -- select schemaname, tablename, policyname, cmd, roles, qual, with_check
 -- from pg_policies
 -- where schemaname = 'public'
---   and tablename in ('friendships', 'profiles', 'bat_signals', 'location_types', 'locations_global', 'locations_global_types', 'user_locations', 'locations')
+--   and tablename in ('friendships', 'profiles', 'bat_signals', 'location_types', 'locations_global', 'locations_global_types', 'user_locations')
 -- order by tablename, policyname;
