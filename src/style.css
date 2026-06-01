@@ -1,0 +1,127 @@
+:root {
+  --primary-color: #4B0082;
+  --text-color: #FFCC00;
+  --background-color: #1C1C1C;
+
+  --text-font: 'Arial', sans-serif;
+}
+
+html {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: var(--text-font);
+  text-align: center;
+}
+
+a:any-link {
+  color: var(--text-color);
+}
+
+main {
+  margin: 0 auto;
+  width: 90%;
+}
+
+.feed-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.feed-list > li {
+  margin: 0;
+}
+
+.signal-card {
+  border: 1px solid oklch(from var(--primary-color) calc(l + 0.1) c h);
+  padding: 0.8rem;
+  border-radius: 8px;
+  background: oklch(from var(--primary-color) l c h / 0.4);
+}
+
+.signal-card-header {
+  font-size: 1rem;
+  text-align: left;
+}
+
+.signal-summary,
+.signal-message {
+  margin: 0;
+}
+
+.signal-meta {
+  display: flex;
+  gap: 1rem;
+  margin: 0 0 0.6rem;
+  font-size: 0.65rem;
+}
+
+.signal-meta > div {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.signal-meta dt {
+  font-weight: 700;
+}
+
+.signal-meta dd {
+  margin: 0;
+}
+
+.signal-message {
+  font-size: 0.9rem;
+}
+
+#open-signal-composer {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 1px solid var(--text-color);
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  width: clamp(100px, 20vw, 200px);
+  height: clamp(100px, 20vw, 200px);
+  font-size: 1.3rem;
+  font-family: trattatello;
+  span {
+    display: block;
+    font-size: 2rem;
+  }
+}
+
+nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--primary-color);
+  display: flex;
+  gap: 8px;
+  justify-content: space-evenly;
+  height: 50px;
+  a, button {
+    background: inherit;
+    border: inherit;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    align-items: center;
+    text-align: center;
+    font-size: .65rem;
+    text-decoration: none;
+    margin: 0;
+    text-box-trim: trim-both;
+    svg {
+      height: 20px;
+      width: 20px;
+    }
+  }
+}
