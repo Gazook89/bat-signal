@@ -1,6 +1,13 @@
 import { supabase } from './supabase.js'
 import './pages/auth-page.js'
 import { ensureProfileRecord } from './lib/profile.js'
+import {
+  applyBadgeCount,
+  clearBadge,
+  getBadgeCount,
+  getBadgeSettings,
+  markSignalsSeenNow
+} from './lib/badge.js'
 
 // Lazy loaders must use static import strings so Vite can analyze them.
 const pageLoaders = {
@@ -25,9 +32,71 @@ const nav = document.getElementById('main-nav')
 const currentUserEl = document.getElementById('current-user')
 const navOpenComposerButton = document.getElementById('nav-open-signal-composer')
 let shouldOpenComposerOnFeed = false
+let badgeChannel = null
+let currentUserId = null
 
 function dispatchOpenComposerEvent() {
   document.dispatchEvent(new CustomEvent('open-signal-composer'))
+}
+
+async function fetchActiveSignals() {
+  const now = new Date().toISOString()
+  const { data, error } = await supabase
+    .from('signals')
+    .select('id, user_id, created_at, expires_at')
+    .gt('expires_at', now)
+
+  if (error) {
+    throw error
+  }
+
+  return data || []
+}
+
+async function refreshBadge() {
+  if (!currentUserId) {
+    return
+  }
+
+  const settings = getBadgeSettings()
+  if (!settings.enabled) {
+    await clearBadge()
+    return
+  }
+
+  try {
+    const signals = await fetchActiveSignals()
+    const badgeCount = getBadgeCount(signals, currentUserId)
+    await applyBadgeCount(badgeCount)
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function stopBadgeWatcher() {
+  if (badgeChannel) {
+    supabase.removeChannel(badgeChannel)
+    badgeChannel = null
+  }
+}
+
+function startBadgeWatcher() {
+  if (!currentUserId) {
+    return
+  }
+
+  stopBadgeWatcher()
+
+  badgeChannel = supabase
+    .channel('signals-badge-updates')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'signals' },
+      () => refreshBadge()
+    )
+    .subscribe()
+
+  refreshBadge()
 }
 
 function setCurrentUserDisplay(profile, user) {
@@ -48,6 +117,7 @@ function setCurrentUserDisplay(profile, user) {
 
 async function enterAuthenticatedArea(session, nextHash = '#feed') {
   nav.hidden = false
+  currentUserId = session?.user?.id || null
 
   try {
     const profile = await ensureProfileRecord(supabase, session.user)
@@ -57,6 +127,7 @@ async function enterAuthenticatedArea(session, nextHash = '#feed') {
     setCurrentUserDisplay(null, session.user)
   }
 
+  startBadgeWatcher()
   window.location.hash = nextHash
 }
 
@@ -75,6 +146,9 @@ const routes = {
     await loadPage('feed-page')
     app.innerHTML = '<feed-page></feed-page>'
     nav.hidden = false
+
+    markSignalsSeenNow()
+    refreshBadge()
 
     if (shouldOpenComposerOnFeed) {
       shouldOpenComposerOnFeed = false
@@ -109,6 +183,9 @@ supabase.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN') {
     enterAuthenticatedArea(session, '#feed')
   } else if (event === 'SIGNED_OUT') {
+    stopBadgeWatcher()
+    currentUserId = null
+    clearBadge()
     nav.hidden = true
     if (currentUserEl) {
       currentUserEl.textContent = ''
@@ -120,6 +197,10 @@ supabase.auth.onAuthStateChange((event, session) => {
 
 document.addEventListener('profile-change', (event) => {
   setCurrentUserDisplay(event.detail?.profile, event.detail?.user)
+})
+
+document.addEventListener('badge-settings-change', () => {
+  refreshBadge()
 })
 
 navOpenComposerButton?.addEventListener('click', async () => {
