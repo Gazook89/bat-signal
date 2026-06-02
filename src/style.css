@@ -14,6 +14,12 @@ html {
   height: 100vh;
 }
 
+svg#svg-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+}
+
 body {
   position: absolute;
   inset: 0;
@@ -94,7 +100,6 @@ nav {
   bottom: 0;
   left: 0;
   width: 100%;
-  background: var(--primary-color);
   display: flex;
   gap: 8px;
   justify-content: space-evenly;

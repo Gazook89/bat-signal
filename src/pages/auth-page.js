@@ -22,6 +22,7 @@ export class AuthPage extends HTMLElement {
         <button id="auth-submit" type="submit">Sign Up / Sign In</button>
         <p id="auth-error" class="error" role="alert"></p>
       </form>
+      <p>A new account will be created if one doesn't exist for the provided email, and a confirmation email will hit your inbox shortly.</p>
     `
     this.querySelector('#auth-form').addEventListener('submit', this.handleSubmit)
   }
