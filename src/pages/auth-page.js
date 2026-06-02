@@ -19,7 +19,7 @@ export class AuthPage extends HTMLElement {
           <label for="password">Password</label>
           <input type="password" id="password" required minlength="6" autocomplete="current-password" />
         </div>
-        <button type="submit">Sign Up / Sign In</button>
+        <button id="auth-submit" type="submit">Sign Up / Sign In</button>
         <p id="auth-error" class="error" role="alert"></p>
       </form>
     `
@@ -31,35 +31,56 @@ export class AuthPage extends HTMLElement {
     const email = this.querySelector('#email').value.trim()
     const password = this.querySelector('#password').value
     const errorEl = this.querySelector('#auth-error')
+    const submitButton = this.querySelector('#auth-submit')
     errorEl.textContent = ''
+    submitButton.disabled = true
+    submitButton.textContent = 'Working...'
 
-    // Try to sign in first. If credentials are invalid, create a new account.
-    let { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    try {
+      // Try to sign in first. If credentials are invalid, create a new account.
+      let { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
-    if (error) {
-      const signUpResult = await supabase.auth.signUp({
-        email,
-        password
-      })
+      if (error) {
+        const signUpResult = await supabase.auth.signUp({
+          email,
+          password
+        })
 
-      data = signUpResult.data
-      error = signUpResult.error
-    }
+        data = signUpResult.data
+        error = signUpResult.error
 
-    const session = data?.session
-
-    if (error) {
-      errorEl.textContent = error.message
-    } else if (!session) {
-      errorEl.textContent = 'Account created. Check your email to confirm, then sign in.'
-    } else {
-      try {
-        await ensureProfileRecord(supabase, session.user)
-      } catch (profileError) {
-        console.error(profileError)
+        if (error) {
+          const normalizedMessage = String(error.message || '').toLowerCase()
+          if (
+            normalizedMessage.includes('already registered') ||
+            normalizedMessage.includes('already been registered') ||
+            normalizedMessage.includes('user already exists') ||
+            normalizedMessage.includes('database error saving new user')
+          ) {
+            errorEl.textContent = 'Check your email for a confirmation link, then come back and sign in.'
+            return
+          }
+        }
       }
-      errorEl.textContent = ''
-      window.location.hash = '#feed'
+
+      const session = data?.session
+
+      if (error) {
+        errorEl.textContent = error.message
+      } else if (!session) {
+        errorEl.textContent = `Check ${email} for a confirmation link, then come back and sign in.`
+      } else {
+        try {
+          await ensureProfileRecord(supabase, session.user)
+        } catch (profileError) {
+          console.error(profileError)
+        }
+        errorEl.textContent = ''
+        window.location.hash = '#feed'
+      }
+    } finally {
+      submitButton.disabled = false
+      submitButton.textContent = 'Sign Up / Sign In'
     }
   }
 }
