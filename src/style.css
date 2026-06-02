@@ -195,3 +195,18 @@ select {
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
+
+button {
+  padding: 10px;
+  background: inherit;
+  border: 1px solid var(--text-color);
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-size: 1rem;
+  text-decoration: none;
+  margin: 5px auto;
+}
