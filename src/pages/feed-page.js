@@ -20,7 +20,7 @@ export class FeedPage extends HTMLElement {
 
     // Subscribe to real-time changes
     this.channel = supabase
-      .channel('bat-signals')
+      .channel('kid-colliders')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'bat_signals' },
@@ -196,7 +196,7 @@ export class FeedPage extends HTMLElement {
       submitBtn.disabled = true
     }
     if (statusEl) {
-      statusEl.textContent = 'Sending bat signal...'
+      statusEl.textContent = 'Reticulating splines....'
     }
 
     try {
@@ -263,7 +263,7 @@ export class FeedPage extends HTMLElement {
       }
 
       if (statusEl) {
-        statusEl.textContent = 'Bat signal sent.'
+        statusEl.textContent = 'Collider activated! Your signal is live.'
       }
 
       this.handleCancelComposer()
@@ -429,7 +429,7 @@ export class FeedPage extends HTMLElement {
     this.innerHTML = `
       
       <section id="signal-composer" hidden>
-        <h3>Create Bat Signal</h3>
+        <h3>Activate Collider</h3>
         <form id="signal-form">
           <div class="form-group">
             <label for="signal-location-select">Saved Location</label>

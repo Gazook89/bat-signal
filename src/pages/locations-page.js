@@ -31,7 +31,7 @@ export class LocationsPage extends HTMLElement {
   render() {
     this.innerHTML = `
       <h2>My Places</h2>
-      <p>Manage your private saved locations for quick bat signals.</p>
+      <p>Manage your private saved locations to quickly activate the collider.</p>
 
       <form id="location-form">
         <div class="form-group">
