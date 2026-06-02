@@ -23,7 +23,7 @@ export class FeedPage extends HTMLElement {
       .channel('kid-colliders')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'bat_signals' },
+        { event: '*', schema: 'public', table: 'signals' },
         () => this.loadSignals()
       )
       .subscribe()
@@ -250,7 +250,7 @@ export class FeedPage extends HTMLElement {
       let insertSucceeded = false
 
       for (const payload of payloads) {
-        const { error } = await supabase.from('bat_signals').insert(payload)
+        const { error } = await supabase.from('signals').insert(payload)
         if (!error) {
           insertSucceeded = true
           break
@@ -345,7 +345,7 @@ export class FeedPage extends HTMLElement {
   async loadSignals() {
     const now = new Date().toISOString()
     const { data, error } = await supabase
-      .from('bat_signals')
+      .from('signals')
       .select(`
         *,
         profiles (email, display_name)
