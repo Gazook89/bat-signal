@@ -22,6 +22,12 @@ const loadPage = async (tagName) => {
 const app = document.getElementById('app')
 const nav = document.getElementById('main-nav')
 const currentUserEl = document.getElementById('current-user')
+const navOpenComposerButton = document.getElementById('nav-open-signal-composer')
+let shouldOpenComposerOnFeed = false
+
+function dispatchOpenComposerEvent() {
+  document.dispatchEvent(new CustomEvent('open-signal-composer'))
+}
 
 function setCurrentUserDisplay(profile, user) {
   if (!currentUserEl) {
@@ -68,6 +74,11 @@ const routes = {
     await loadPage('feed-page')
     app.innerHTML = '<feed-page></feed-page>'
     nav.hidden = false
+
+    if (shouldOpenComposerOnFeed) {
+      shouldOpenComposerOnFeed = false
+      queueMicrotask(() => dispatchOpenComposerEvent())
+    }
   },
   '#profile': async () => {
     await loadPage('profile-page')
@@ -111,6 +122,16 @@ document.addEventListener('profile-change', (event) => {
 // Sign out button
 document.getElementById('sign-out-btn').addEventListener('click', async () => {
   await supabase.auth.signOut()
+navOpenComposerButton?.addEventListener('click', async () => {
+  shouldOpenComposerOnFeed = true
+
+  if (window.location.hash === '#feed') {
+    dispatchOpenComposerEvent()
+    shouldOpenComposerOnFeed = false
+    return
+  }
+
+  window.location.hash = '#feed'
 })
 
 // Init

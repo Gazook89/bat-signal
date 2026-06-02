@@ -6,6 +6,7 @@ export class FeedPage extends HTMLElement {
     this.signals = []
     this.userLocations = []
     this.handleOpenComposer = this.handleOpenComposer.bind(this)
+    this.handleGlobalOpenComposer = this.handleGlobalOpenComposer.bind(this)
     this.handleCancelComposer = this.handleCancelComposer.bind(this)
     this.handleCreateSignal = this.handleCreateSignal.bind(this)
     this.handleLocationSelectionChange = this.handleLocationSelectionChange.bind(this)
@@ -34,14 +35,14 @@ export class FeedPage extends HTMLElement {
   }
 
   bindEvents() {
-    this.querySelector('#open-signal-composer')?.addEventListener('click', this.handleOpenComposer)
+    document.addEventListener('open-signal-composer', this.handleGlobalOpenComposer)
     this.querySelector('#cancel-signal-composer')?.addEventListener('click', this.handleCancelComposer)
     this.querySelector('#signal-form')?.addEventListener('submit', this.handleCreateSignal)
     this.querySelector('#signal-location-select')?.addEventListener('change', this.handleLocationSelectionChange)
   }
 
   unbindEvents() {
-    this.querySelector('#open-signal-composer')?.removeEventListener('click', this.handleOpenComposer)
+    document.removeEventListener('open-signal-composer', this.handleGlobalOpenComposer)
     this.querySelector('#cancel-signal-composer')?.removeEventListener('click', this.handleCancelComposer)
     this.querySelector('#signal-form')?.removeEventListener('submit', this.handleCreateSignal)
     this.querySelector('#signal-location-select')?.removeEventListener('change', this.handleLocationSelectionChange)
@@ -132,6 +133,10 @@ export class FeedPage extends HTMLElement {
     if (composer) {
       composer.hidden = false
     }
+  }
+
+  handleGlobalOpenComposer() {
+    this.handleOpenComposer()
   }
 
   handleCancelComposer() {
@@ -464,8 +469,6 @@ export class FeedPage extends HTMLElement {
       <div id="signals-list" aria-live="polite">
         <p>Loading...</p>
       </div>
-
-      <button id="open-signal-composer" type="button">Turn On <span>Searchlight</span></button>
     `
   }
 
