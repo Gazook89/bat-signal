@@ -6,7 +6,8 @@ import { ensureProfileRecord } from './lib/profile.js'
 const pageLoaders = {
   'feed-page': () => import('./pages/feed-page.js'),
   'profile-page': () => import('./pages/profile-page.js'),
-  'locations-page': () => import('./pages/locations-page.js')
+  'locations-page': () => import('./pages/locations-page.js'),
+  'friends-page': () => import('./pages/friends-page.js')
 }
 
 const loadPage = async (tagName) => {
@@ -91,7 +92,9 @@ const routes = {
     nav.hidden = false
   },
   '#friends': async () => {
-    app.innerHTML = '<h2>Friends</h2><p>Coming soon.</p>'
+    await loadPage('friends-page')
+    app.innerHTML = '<friends-page></friends-page>'
+    nav.hidden = false
   }
 }
 
