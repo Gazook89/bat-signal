@@ -5,6 +5,7 @@ export class ProfilePage extends HTMLElement {
   constructor() {
     super()
     this.handleSubmit = this.handleSubmit.bind(this)
+    this.handleSignOut = this.handleSignOut.bind(this)
   }
 
   connectedCallback() {
@@ -14,6 +15,7 @@ export class ProfilePage extends HTMLElement {
 
   disconnectedCallback() {
     this.querySelector('#profile-form')?.removeEventListener('submit', this.handleSubmit)
+    this.querySelector('#profile-sign-out-btn')?.removeEventListener('click', this.handleSignOut)
   }
 
   render() {
@@ -34,7 +36,10 @@ export class ProfilePage extends HTMLElement {
           <label for="profile-phone">Phone number</label>
           <input type="tel" id="profile-phone" autocomplete="tel" />
         </div>
-        <button type="submit">Save Profile</button>
+        <div class="signal-actions">
+          <button type="submit">Save Profile</button>
+          <button id="profile-sign-out-btn" type="button">Sign Out</button>
+        </div>
       </form>
     `
 
@@ -44,8 +49,10 @@ export class ProfilePage extends HTMLElement {
     this.displayNameEl = this.querySelector('#profile-display-name')
     this.phoneEl = this.querySelector('#profile-phone')
     this.saveButtonEl = this.querySelector('button[type="submit"]')
+    this.signOutButtonEl = this.querySelector('#profile-sign-out-btn')
 
     this.formEl.addEventListener('submit', this.handleSubmit)
+    this.signOutButtonEl.addEventListener('click', this.handleSignOut)
   }
 
   async loadProfile() {
@@ -140,6 +147,19 @@ export class ProfilePage extends HTMLElement {
       }
     } finally {
       this.saveButtonEl.disabled = false
+    }
+  }
+
+  async handleSignOut() {
+    this.statusEl.textContent = 'Signing out...'
+    this.signOutButtonEl.disabled = true
+
+    try {
+      await supabase.auth.signOut()
+    } catch (error) {
+      console.error(error)
+      this.statusEl.textContent = error.message || 'Could not sign out.'
+      this.signOutButtonEl.disabled = false
     }
   }
 }

@@ -122,9 +122,6 @@ document.addEventListener('profile-change', (event) => {
   setCurrentUserDisplay(event.detail?.profile, event.detail?.user)
 })
 
-// Sign out button
-document.getElementById('sign-out-btn').addEventListener('click', async () => {
-  await supabase.auth.signOut()
 navOpenComposerButton?.addEventListener('click', async () => {
   shouldOpenComposerOnFeed = true
 
