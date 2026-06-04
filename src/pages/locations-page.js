@@ -30,7 +30,6 @@ export class LocationsPage extends HTMLElement {
 
   render() {
     this.innerHTML = `
-      <h2>My Places</h2>
       <p>Manage your private saved locations to quickly activate the collider.</p>
 
       <form id="location-form">
@@ -48,8 +47,8 @@ export class LocationsPage extends HTMLElement {
         </div>
         <div class="form-group checkbox-row">
           <label>
-            <input id="location-starred" type="checkbox" />
             Star this place
+            <input id="location-starred" type="checkbox" />
           </label>
         </div>
 

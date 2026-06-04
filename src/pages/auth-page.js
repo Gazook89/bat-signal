@@ -33,6 +33,9 @@ export class AuthPage extends HTMLElement {
     const password = this.querySelector('#password').value
     const errorEl = this.querySelector('#auth-error')
     const submitButton = this.querySelector('#auth-submit')
+    const rawBasePath = import.meta.env.BASE_URL || '/'
+    const basePath = rawBasePath.endsWith('/') ? rawBasePath : `${rawBasePath}/`
+    const emailRedirectTo = new URL(basePath, window.location.origin).toString()
     errorEl.textContent = ''
     submitButton.disabled = true
     submitButton.textContent = 'Working...'
@@ -44,7 +47,10 @@ export class AuthPage extends HTMLElement {
       if (error) {
         const signUpResult = await supabase.auth.signUp({
           email,
-          password
+          password,
+          options: {
+            emailRedirectTo
+          }
         })
 
         data = signUpResult.data

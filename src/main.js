@@ -29,11 +29,45 @@ const loadPage = async (tagName) => {
 
 const app = document.getElementById('app')
 const nav = document.getElementById('main-nav')
+const appHeader = document.getElementById('app-header')
+const brandTitleEl = document.getElementById('brand-title')
+const pageTitleEl = document.getElementById('page-title')
 const currentUserEl = document.getElementById('current-user')
 const navOpenComposerButton = document.getElementById('nav-open-signal-composer')
 let shouldOpenComposerOnFeed = false
 let badgeChannel = null
 let currentUserId = null
+
+const headerByRoute = {
+  '#feed': { mode: 'feed', pageTitle: '', showUser: true },
+  '#locations': { mode: 'subpage', pageTitle: 'My Places', showUser: false },
+  '#friends': { mode: 'subpage', pageTitle: 'Friends', showUser: false },
+  '#profile': { mode: 'subpage', pageTitle: 'Profile', showUser: false }
+}
+
+function updateHeader(hash = '') {
+  if (!appHeader || !brandTitleEl || !pageTitleEl || !currentUserEl) {
+    return
+  }
+
+  const config = headerByRoute[hash] || { mode: 'auth', pageTitle: '', showUser: false }
+
+  appHeader.classList.remove('header-feed', 'header-subpage', 'header-auth')
+  appHeader.classList.add(`header-${config.mode}`)
+
+  brandTitleEl.textContent = 'Kid Collider'
+
+  if (config.pageTitle) {
+    pageTitleEl.textContent = config.pageTitle
+    pageTitleEl.hidden = false
+  } else {
+    pageTitleEl.textContent = ''
+    pageTitleEl.hidden = true
+  }
+
+  const hasUserLabel = Boolean((currentUserEl.textContent || '').trim())
+  currentUserEl.hidden = !(config.showUser && hasUserLabel)
+}
 
 function dispatchOpenComposerEvent() {
   document.dispatchEvent(new CustomEvent('open-signal-composer'))
@@ -140,11 +174,11 @@ function setCurrentUserDisplay(profile, user) {
 
   if (label) {
     currentUserEl.textContent = label
-    currentUserEl.hidden = false
   } else {
     currentUserEl.textContent = ''
-    currentUserEl.hidden = true
   }
+
+  updateHeader(window.location.hash)
 }
 
 async function enterAuthenticatedArea(session, nextHash = '#feed') {
@@ -170,6 +204,7 @@ const routes = {
     if (!session) {
       nav.hidden = true
       app.innerHTML = '<auth-page></auth-page>'
+      updateHeader('')
     } else {
       await enterAuthenticatedArea(session, '#feed')
     }
@@ -178,6 +213,7 @@ const routes = {
     await loadPage('feed-page')
     app.innerHTML = '<feed-page></feed-page>'
     nav.hidden = false
+    updateHeader('#feed')
 
     markSignalsSeenNow()
     refreshBadge()
@@ -191,16 +227,19 @@ const routes = {
     await loadPage('profile-page')
     app.innerHTML = '<profile-page></profile-page>'
     nav.hidden = false
+    updateHeader('#profile')
   },
   '#locations': async () => {
     await loadPage('locations-page')
     app.innerHTML = '<locations-page></locations-page>'
     nav.hidden = false
+    updateHeader('#locations')
   },
   '#friends': async () => {
     await loadPage('friends-page')
     app.innerHTML = '<friends-page></friends-page>'
     nav.hidden = false
+    updateHeader('#friends')
   }
 }
 
@@ -223,6 +262,7 @@ supabase.auth.onAuthStateChange((event, session) => {
       currentUserEl.textContent = ''
       currentUserEl.hidden = true
     }
+    updateHeader('')
     window.location.hash = ''
   }
 })
