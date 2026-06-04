@@ -159,13 +159,14 @@ export class FriendsPage extends HTMLElement {
 
     this.renderRelationshipList('#accepted-friends', accepted, (row, otherId) => `
       <div class="signal-actions">
+        <button type="button" data-action="remove-friend" data-id="${row.id}">Remove Friend</button>
         <button type="button" data-action="block" data-target-id="${otherId}">Block</button>
       </div>
     `)
 
     this.renderRelationshipList('#blocked-users', blocked, (row, otherId) => `
       <div class="signal-actions">
-        <button type="button" data-action="unblock" data-id="${row.id}" data-target-id="${otherId}">Remove Block</button>
+        <button type="button" data-action="unblock" data-id="${row.id}" data-target-id="${otherId}">Unblock</button>
       </div>
     `)
   }
@@ -295,7 +296,10 @@ export class FriendsPage extends HTMLElement {
     }
 
     if (relationship.status === 'accepted') {
-      return '<button type="button" disabled>Connected</button>'
+      return `
+        <button type="button" disabled>Connected</button>
+        <button type="button" data-action="remove-friend" data-id="${relationship.id}">Remove Friend</button>
+      `
     }
 
     if (relationship.status === 'pending') {
@@ -382,6 +386,12 @@ export class FriendsPage extends HTMLElement {
       }
 
       if (action === 'unblock' && id) {
+        const confirmed = window.confirm('Unblock this user?')
+        if (!confirmed) {
+          statusEl.textContent = 'Unblock canceled.'
+          return
+        }
+
         statusEl.textContent = 'Removing block...'
         const { error } = await supabase
           .from('friendships')
@@ -398,6 +408,21 @@ export class FriendsPage extends HTMLElement {
         await this.loadData()
         this.renderSearchResults()
         statusEl.textContent = 'Block removed.'
+        return
+      }
+
+      if (action === 'remove-friend' && id) {
+        const confirmed = window.confirm('Remove this friend?')
+        if (!confirmed) {
+          statusEl.textContent = 'Remove friend canceled.'
+          return
+        }
+
+        statusEl.textContent = 'Removing friend...'
+        await this.removeFriendship(id)
+        await this.loadData()
+        this.renderSearchResults()
+        statusEl.textContent = 'Friend removed.'
       }
     } catch (error) {
       console.error(error)
@@ -480,6 +505,32 @@ export class FriendsPage extends HTMLElement {
         addressee_id: targetId,
         status: 'blocked'
       })
+
+    if (error) {
+      throw error
+    }
+  }
+
+  async removeFriendship(relationshipId) {
+    const relationship = this.relationships.find((row) => row.id === relationshipId)
+
+    if (!relationship) {
+      throw new Error('Could not find that friendship record.')
+    }
+
+    if (relationship.status !== 'accepted') {
+      throw new Error('Only accepted friendships can be removed.')
+    }
+
+    const isParticipant = relationship.requester_id === this.user.id || relationship.addressee_id === this.user.id
+    if (!isParticipant) {
+      throw new Error('You are not part of this friendship.')
+    }
+
+    const { error } = await supabase
+      .from('friendships')
+      .delete()
+      .eq('id', relationshipId)
 
     if (error) {
       throw error
