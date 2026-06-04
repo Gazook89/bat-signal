@@ -149,6 +149,10 @@ form {
   gap: 0.5rem;
 }
 
+.form-group[hidden] {
+  display: none;
+}
+
 input, textarea {
   background: inherit;
   border: 1px solid var(--text-color);
