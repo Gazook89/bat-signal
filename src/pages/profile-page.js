@@ -60,6 +60,7 @@ export class ProfilePage extends HTMLElement {
           <summary>App Badge Preferences (Optional)</summary>
           <p class="small-note">
             This only updates the app icon badge count. It does not send popup messages from this app.
+            The badge counts other users' signals plus pending friend requests sent to you, and it excludes your own signal.
           </p>
           <div class="form-group checkbox-row">
             <label>

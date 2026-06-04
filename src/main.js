@@ -4,7 +4,7 @@ import { ensureProfileRecord } from './lib/profile.js'
 import {
   applyBadgeCount,
   clearBadge,
-  getBadgeCount,
+  getCombinedBadgeCount,
   getBadgeSettings,
   markSignalsSeenNow
 } from './lib/badge.js'
@@ -39,12 +39,36 @@ function dispatchOpenComposerEvent() {
   document.dispatchEvent(new CustomEvent('open-signal-composer'))
 }
 
+function handleSignalsVisibilityChange() {
+  refreshBadge()
+}
+
+document.addEventListener('signals-visibility-change', handleSignalsVisibilityChange)
+
 async function fetchActiveSignals() {
   const now = new Date().toISOString()
   const { data, error } = await supabase
     .from('signals')
     .select('id, user_id, created_at, expires_at')
     .gt('expires_at', now)
+
+  if (error) {
+    throw error
+  }
+
+  return data || []
+}
+
+async function fetchIncomingFriendRequests() {
+  if (!currentUserId) {
+    return []
+  }
+
+  const { data, error } = await supabase
+    .from('friendships')
+    .select('id, requester_id, addressee_id, status, created_at')
+    .eq('addressee_id', currentUserId)
+    .eq('status', 'pending')
 
   if (error) {
     throw error
@@ -65,8 +89,11 @@ async function refreshBadge() {
   }
 
   try {
-    const signals = await fetchActiveSignals()
-    const badgeCount = getBadgeCount(signals, currentUserId)
+    const [signals, friendships] = await Promise.all([
+      fetchActiveSignals(),
+      fetchIncomingFriendRequests()
+    ])
+    const badgeCount = getCombinedBadgeCount({ signals, friendships, currentUserId })
     await applyBadgeCount(badgeCount)
   } catch (error) {
     console.error(error)
@@ -92,6 +119,11 @@ function startBadgeWatcher() {
     .on(
       'postgres_changes',
       { event: '*', schema: 'public', table: 'signals' },
+      () => refreshBadge()
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'friendships' },
       () => refreshBadge()
     )
     .subscribe()

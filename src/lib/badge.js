@@ -1,6 +1,7 @@
 const BADGE_ENABLED_KEY = 'kc.badge.enabled'
 const BADGE_MODE_KEY = 'kc.badge.mode'
 const BADGE_LAST_SEEN_AT_KEY = 'kc.badge.lastSeenAt'
+const DISMISSED_SIGNAL_IDS_KEY = 'kc.dismissedSignalIds'
 
 export function isBadgingSupported() {
   return typeof navigator !== 'undefined' && typeof navigator.setAppBadge === 'function' && typeof navigator.clearAppBadge === 'function'
@@ -44,8 +45,43 @@ export function markSignalsSeenNow() {
   localStorage.setItem(BADGE_LAST_SEEN_AT_KEY, new Date().toISOString())
 }
 
+export function getDismissedSignalIds() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(DISMISSED_SIGNAL_IDS_KEY) || '[]')
+    return Array.isArray(parsed) ? parsed.filter((id) => typeof id === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+export function dismissSignal(signalId) {
+  if (!signalId) {
+    return
+  }
+
+  const ids = new Set(getDismissedSignalIds())
+  ids.add(signalId)
+  localStorage.setItem(DISMISSED_SIGNAL_IDS_KEY, JSON.stringify([...ids]))
+}
+
+export function syncDismissedSignalIds(activeSignalIds) {
+  const activeIds = new Set((activeSignalIds || []).filter((id) => typeof id === 'string'))
+  const remaining = getDismissedSignalIds().filter((id) => activeIds.has(id))
+  localStorage.setItem(DISMISSED_SIGNAL_IDS_KEY, JSON.stringify(remaining))
+  return remaining
+}
+
+export function isSignalDismissed(signalId) {
+  return getDismissedSignalIds().includes(signalId)
+}
+
+export function getVisibleSignals(signals) {
+  const dismissedIds = new Set(getDismissedSignalIds())
+  return (signals || []).filter((signal) => !dismissedIds.has(signal.id))
+}
+
 function countRelevantSignals(signals, currentUserId) {
-  return signals.filter((signal) => signal.user_id && signal.user_id !== currentUserId)
+  return getVisibleSignals(signals).filter((signal) => signal.user_id && signal.user_id !== currentUserId)
 }
 
 function countNewSignals(signals, currentUserId) {
@@ -70,6 +106,31 @@ export function getBadgeCount(signals, currentUserId) {
     return countActiveSignals(signals, currentUserId)
   }
   return countNewSignals(signals, currentUserId)
+}
+
+export function countIncomingPendingRequests(friendships, currentUserId) {
+  return friendships.filter((relationship) => {
+    return relationship.addressee_id === currentUserId && relationship.status === 'pending'
+  }).length
+}
+
+export function countActiveSignalsFromOthers(signals, currentUserId) {
+  return countActiveSignals(signals, currentUserId)
+}
+
+export function countNewSignalsFromOthers(signals, currentUserId) {
+  return countNewSignals(signals, currentUserId)
+}
+
+export function getCombinedBadgeCount({ signals, friendships, currentUserId }) {
+  const incomingRequests = countIncomingPendingRequests(friendships || [], currentUserId)
+  const { mode } = getBadgeSettings()
+
+  if (mode === 'active') {
+    return countActiveSignalsFromOthers(signals || [], currentUserId) + incomingRequests
+  }
+
+  return countNewSignalsFromOthers(signals || [], currentUserId) + incomingRequests
 }
 
 export async function applyBadgeCount(count) {

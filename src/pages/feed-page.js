@@ -1,20 +1,28 @@
 import { supabase } from '../supabase.js'
+import {
+  dismissSignal,
+  getVisibleSignals,
+  syncDismissedSignalIds
+} from '../lib/badge.js'
 
 export class FeedPage extends HTMLElement {
   constructor() {
     super()
     this.signals = []
     this.userLocations = []
+    this.currentUserId = null
     this.handleOpenComposer = this.handleOpenComposer.bind(this)
     this.handleGlobalOpenComposer = this.handleGlobalOpenComposer.bind(this)
     this.handleCancelComposer = this.handleCancelComposer.bind(this)
     this.handleCreateSignal = this.handleCreateSignal.bind(this)
     this.handleLocationSelectionChange = this.handleLocationSelectionChange.bind(this)
+    this.handleSignalAction = this.handleSignalAction.bind(this)
   }
 
   async connectedCallback() {
     this.render()
     this.bindEvents()
+    await this.loadCurrentUser()
     await this.loadUserLocations()
     await this.loadSignals()
 
@@ -39,6 +47,7 @@ export class FeedPage extends HTMLElement {
     this.querySelector('#cancel-signal-composer')?.addEventListener('click', this.handleCancelComposer)
     this.querySelector('#signal-form')?.addEventListener('submit', this.handleCreateSignal)
     this.querySelector('#signal-location-select')?.addEventListener('change', this.handleLocationSelectionChange)
+    this.querySelector('#signals-list')?.addEventListener('click', this.handleSignalAction)
   }
 
   unbindEvents() {
@@ -46,6 +55,14 @@ export class FeedPage extends HTMLElement {
     this.querySelector('#cancel-signal-composer')?.removeEventListener('click', this.handleCancelComposer)
     this.querySelector('#signal-form')?.removeEventListener('submit', this.handleCreateSignal)
     this.querySelector('#signal-location-select')?.removeEventListener('change', this.handleLocationSelectionChange)
+    this.querySelector('#signals-list')?.removeEventListener('click', this.handleSignalAction)
+  }
+
+  async loadCurrentUser() {
+    const { data: userData, error } = await supabase.auth.getUser()
+    if (!error && userData?.user) {
+      this.currentUserId = userData.user.id
+    }
   }
 
   async loadUserLocations() {
@@ -359,6 +376,7 @@ export class FeedPage extends HTMLElement {
     }
 
     this.signals = await this.enrichSignalsWithDestinations(data || [])
+    syncDismissedSignalIds(this.signals.map((signal) => signal.id))
     this.renderList()
   }
 
@@ -425,6 +443,59 @@ export class FeedPage extends HTMLElement {
     })
   }
 
+  handleSignalAction(event) {
+    const button = event.target.closest('button[data-signal-action]')
+    if (!button) {
+      return
+    }
+
+    const signalId = button.getAttribute('data-signal-id')
+    const action = button.getAttribute('data-signal-action')
+    const statusEl = this.querySelector('#signals-status')
+
+    if (!signalId) {
+      return
+    }
+
+    if (action === 'dismiss') {
+      dismissSignal(signalId)
+      syncDismissedSignalIds(this.signals.map((signal) => signal.id))
+      this.renderList()
+      document.dispatchEvent(new CustomEvent('signals-visibility-change'))
+      if (statusEl) {
+        statusEl.textContent = 'Signal dismissed.'
+      }
+      return
+    }
+
+    if (action === 'delete' && this.currentUserId) {
+      if (statusEl) {
+        statusEl.textContent = 'Deleting your signal...'
+      }
+
+      supabase
+        .from('signals')
+        .delete()
+        .eq('id', signalId)
+        .eq('user_id', this.currentUserId)
+        .then(({ error }) => {
+          if (error) {
+            if (statusEl) {
+              statusEl.textContent = error.message
+            }
+            return
+          }
+
+          if (statusEl) {
+            statusEl.textContent = 'Your signal was deleted.'
+          }
+
+          document.dispatchEvent(new CustomEvent('signals-visibility-change'))
+          this.loadSignals()
+        })
+    }
+  }
+
   render() {
     this.innerHTML = `
       
@@ -466,6 +537,7 @@ export class FeedPage extends HTMLElement {
           <p id="signal-status" role="status"></p>
         </form>
       </section>
+      <p id="signals-status" role="status"></p>
       <div id="signals-list" aria-live="polite">
         <p>Loading...</p>
       </div>
@@ -474,42 +546,49 @@ export class FeedPage extends HTMLElement {
 
   renderList() {
     const listEl = this.querySelector('#signals-list')
-    if (!this.signals.length) {
+    const visibleSignals = getVisibleSignals(this.signals)
+
+    if (!visibleSignals.length) {
       listEl.innerHTML = '<p>No active signals right now.</p>'
       return
     }
 
-    listEl.innerHTML = '<ul class="feed-list">' + this.signals.map(s => `
-      <li>
-        ${(() => {
-          const name = s.profiles?.display_name || s.profiles?.email || 'A friend'
-          const note = (s.message || '').trim()
-          const destination = s.resolved_destination || 'somewhere nearby'
-          const etaText = s.eta_at
-            ? new Date(s.eta_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-            : 'soon'
-          const expiresText = new Date(s.expires_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+    listEl.innerHTML = '<ul class="feed-list">' + visibleSignals.map((signal) => {
+      const name = signal.profiles?.display_name || signal.profiles?.email || 'A friend'
+      const note = (signal.message || '').trim()
+      const destination = signal.resolved_destination || 'somewhere nearby'
+      const etaText = signal.eta_at
+        ? new Date(signal.eta_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+        : 'soon'
+      const expiresText = new Date(signal.expires_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+      const isOwnSignal = signal.user_id && signal.user_id === this.currentUserId
+      const actionLabel = isOwnSignal ? 'Delete My Signal' : 'Dismiss'
+      const actionType = isOwnSignal ? 'delete' : 'dismiss'
 
-          return `
-            <article class="signal-card">
-              <header class="signal-card-header">
-                <p class="signal-summary"><strong>${name}</strong> is headed to <strong>${destination}</strong>.</p>
-              </header>
-              <dl class="signal-meta">
-                <div>
-                  <dt>ETA</dt>
-                  <dd>${etaText}</dd>
-                </div>
-                <div>
-                  <dt>Expires</dt>
-                  <dd>${expiresText}</dd>
-                </div>
-              </dl>
-              ${note ? `<p class="signal-message">${note}</p>` : ''}
-            </article>`
-        })()}
-      </li>
-    `).join('') + '</ul>'
+      return `
+        <li>
+          <article class="signal-card">
+            <header class="signal-card-header">
+              <p class="signal-summary"><strong>${name}</strong> is headed to <strong>${destination}</strong>.</p>
+            </header>
+            <dl class="signal-meta">
+              <div>
+                <dt>ETA</dt>
+                <dd>${etaText}</dd>
+              </div>
+              <div>
+                <dt>Expires</dt>
+                <dd>${expiresText}</dd>
+              </div>
+            </dl>
+            ${note ? `<p class="signal-message">${note}</p>` : ''}
+            <div class="signal-actions">
+              <button type="button" data-signal-action="${actionType}" data-signal-id="${signal.id}">${actionLabel}</button>
+            </div>
+          </article>
+        </li>
+      `
+    }).join('') + '</ul>'
   }
 }
 
