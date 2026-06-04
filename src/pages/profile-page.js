@@ -13,6 +13,7 @@ export class ProfilePage extends HTMLElement {
     super()
     this.handleSubmit = this.handleSubmit.bind(this)
     this.handleSignOut = this.handleSignOut.bind(this)
+    this.handleDeleteAccount = this.handleDeleteAccount.bind(this)
     this.handleBadgeEnabledChange = this.handleBadgeEnabledChange.bind(this)
     this.handleBadgeModeChange = this.handleBadgeModeChange.bind(this)
     this.handleBadgePermissionRequest = this.handleBadgePermissionRequest.bind(this)
@@ -27,6 +28,7 @@ export class ProfilePage extends HTMLElement {
   disconnectedCallback() {
     this.querySelector('#profile-form')?.removeEventListener('submit', this.handleSubmit)
     this.querySelector('#profile-sign-out-btn')?.removeEventListener('click', this.handleSignOut)
+    this.querySelector('#profile-delete-account-btn')?.removeEventListener('click', this.handleDeleteAccount)
     this.querySelector('#badge-enabled')?.removeEventListener('change', this.handleBadgeEnabledChange)
     this.querySelector('#badge-mode')?.removeEventListener('change', this.handleBadgeModeChange)
     this.querySelector('#badge-request-permission-btn')?.removeEventListener('click', this.handleBadgePermissionRequest)
@@ -55,6 +57,17 @@ export class ProfilePage extends HTMLElement {
           <button type="submit">Save Profile</button>
           <button id="profile-sign-out-btn" type="button">Sign Out</button>
         </div>
+
+        <details>
+          <summary>Delete Account</summary>
+          <p class="small-note">
+            This permanently removes your friend links, active/past signals, personal saved places, and profile personal info.
+            Historical metrics and your UUID are retained for aggregate app analytics.
+          </p>
+          <div class="signal-actions">
+            <button id="profile-delete-account-btn" type="button" class="danger-button">Delete Account Permanently</button>
+          </div>
+        </details>
 
         <details>
           <summary>App Badge Preferences (Optional)</summary>
@@ -94,6 +107,7 @@ export class ProfilePage extends HTMLElement {
     this.phoneEl = this.querySelector('#profile-phone')
     this.saveButtonEl = this.querySelector('button[type="submit"]')
     this.signOutButtonEl = this.querySelector('#profile-sign-out-btn')
+    this.deleteAccountButtonEl = this.querySelector('#profile-delete-account-btn')
     this.badgeEnabledEl = this.querySelector('#badge-enabled')
     this.badgeModeEl = this.querySelector('#badge-mode')
     this.badgeStatusEl = this.querySelector('#badge-status')
@@ -102,6 +116,7 @@ export class ProfilePage extends HTMLElement {
 
     this.formEl.addEventListener('submit', this.handleSubmit)
     this.signOutButtonEl.addEventListener('click', this.handleSignOut)
+    this.deleteAccountButtonEl.addEventListener('click', this.handleDeleteAccount)
     this.badgeEnabledEl.addEventListener('change', this.handleBadgeEnabledChange)
     this.badgeModeEl.addEventListener('change', this.handleBadgeModeChange)
     this.badgePermissionButtonEl.addEventListener('click', this.handleBadgePermissionRequest)
@@ -218,6 +233,49 @@ export class ProfilePage extends HTMLElement {
       console.error(error)
       this.statusEl.textContent = error.message || 'Could not sign out.'
       this.signOutButtonEl.disabled = false
+    }
+  }
+
+  async handleDeleteAccount() {
+    if (!this.user) {
+      this.statusEl.textContent = 'You need to be signed in to delete your account.'
+      return
+    }
+
+    const confirmed = window.confirm(
+      'Delete your account? This cannot be undone and will remove your friend links, personal locations, signals, and personal profile data.'
+    )
+
+    if (!confirmed) {
+      this.statusEl.textContent = 'Account deletion canceled.'
+      return
+    }
+
+    this.statusEl.textContent = 'Deleting account...'
+    this.saveButtonEl.disabled = true
+    this.signOutButtonEl.disabled = true
+    this.deleteAccountButtonEl.disabled = true
+
+    try {
+      const { error } = await supabase.functions.invoke('delete_user', {
+        method: 'POST',
+        body: {}
+      })
+      if (error) {
+        if ((error.message || '').toLowerCase().includes('recent sign-in required')) {
+          throw new Error('For safety, please sign out and sign back in, then delete your account again within a few minutes.')
+        }
+        throw error
+      }
+
+      this.statusEl.textContent = 'Account deleted. Signing out...'
+      await supabase.auth.signOut()
+    } catch (error) {
+      console.error(error)
+      this.statusEl.textContent = error.message || 'Could not delete account.'
+      this.saveButtonEl.disabled = false
+      this.signOutButtonEl.disabled = false
+      this.deleteAccountButtonEl.disabled = false
     }
   }
 

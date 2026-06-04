@@ -218,3 +218,8 @@ button {
   text-decoration: none;
   margin: 5px auto;
 }
+
+.danger-button {
+  border-color: #ff6b6b;
+  color: #ffb3b3;
+}
