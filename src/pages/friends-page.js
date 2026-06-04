@@ -34,7 +34,6 @@ export class FriendsPage extends HTMLElement {
   render() {
     this.innerHTML = `
       <section id="friends-page">
-        <h2>Friends</h2>
         <p>Search by exact display name or exact registered email to connect.</p>
 
         <form id="friend-search-form">

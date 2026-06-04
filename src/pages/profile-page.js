@@ -37,8 +37,7 @@ export class ProfilePage extends HTMLElement {
 
   render() {
     this.innerHTML = `
-      <h2>Profile</h2>
-      <p>Update the name your friends see and add a phone number if you want one later.</p>
+      <p>Manage profile information, settings, and friend lists.</p>
       <p id="profile-status" role="status"></p>
       <form id="profile-form" hidden>
         <div class="form-group">
@@ -49,25 +48,10 @@ export class ProfilePage extends HTMLElement {
           <label for="profile-display-name">Display name</label>
           <input type="text" id="profile-display-name" autocomplete="name" placeholder="How friends should see you" />
         </div>
-        <div class="form-group">
-          <label for="profile-phone">Phone number</label>
-          <input type="tel" id="profile-phone" autocomplete="tel" />
-        </div>
         <div class="signal-actions">
           <button type="submit">Save Profile</button>
           <button id="profile-sign-out-btn" type="button">Sign Out</button>
         </div>
-
-        <details>
-          <summary>Delete Account</summary>
-          <p class="small-note">
-            This permanently removes your friend links, active/past signals, personal saved places, and profile personal info.
-            Historical metrics and your UUID are retained for aggregate app analytics.
-          </p>
-          <div class="signal-actions">
-            <button id="profile-delete-account-btn" type="button" class="danger-button">Delete Account Permanently</button>
-          </div>
-        </details>
 
         <details>
           <summary>App Badge Preferences (Optional)</summary>
@@ -97,6 +81,17 @@ export class ProfilePage extends HTMLElement {
             To fully revoke OS-level permissions later, use your browser or device app settings.
           </p>
         </details>
+
+        <details>
+          <summary>Delete Account</summary>
+          <p class="small-note">
+            This permanently removes your friend links, active/past signals, personal saved places, and profile personal info.
+            Historical metrics and your UUID are retained for aggregate app analytics.
+          </p>
+          <div class="signal-actions">
+            <button id="profile-delete-account-btn" type="button" class="danger-button">Delete Account Permanently</button>
+          </div>
+        </details>
       </form>
     `
 
@@ -104,7 +99,6 @@ export class ProfilePage extends HTMLElement {
     this.formEl = this.querySelector('#profile-form')
     this.emailEl = this.querySelector('#profile-email')
     this.displayNameEl = this.querySelector('#profile-display-name')
-    this.phoneEl = this.querySelector('#profile-phone')
     this.saveButtonEl = this.querySelector('button[type="submit"]')
     this.signOutButtonEl = this.querySelector('#profile-sign-out-btn')
     this.deleteAccountButtonEl = this.querySelector('#profile-delete-account-btn')
@@ -157,7 +151,6 @@ export class ProfilePage extends HTMLElement {
 
       this.emailEl.value = user.email || ''
       this.displayNameEl.value = profile?.display_name || user.user_metadata?.display_name || ''
-      this.phoneEl.value = profile?.phone_number || user.user_metadata?.phone_number || ''
 
       this.formEl.hidden = false
 
@@ -166,8 +159,7 @@ export class ProfilePage extends HTMLElement {
           detail: {
             profile: profile || {
               email: user.email || '',
-              display_name: user.user_metadata?.display_name || '',
-              phone_number: user.user_metadata?.phone_number || ''
+              display_name: user.user_metadata?.display_name || ''
             },
             user
           }
@@ -187,7 +179,6 @@ export class ProfilePage extends HTMLElement {
     event.preventDefault()
 
     const displayName = this.displayNameEl.value.trim()
-    const phoneNumber = this.phoneEl.value.trim()
 
     if (!this.user) {
       this.statusEl.textContent = 'You need to be signed in to save your profile.'
@@ -198,10 +189,9 @@ export class ProfilePage extends HTMLElement {
     this.saveButtonEl.disabled = true
 
     try {
-      const updatedProfile = await saveProfileRecord(supabase, this.user, { displayName, phoneNumber })
+      const updatedProfile = await saveProfileRecord(supabase, this.user, { displayName })
       this.profile = updatedProfile
       this.displayNameEl.value = updatedProfile.display_name || ''
-      this.phoneEl.value = updatedProfile.phone_number || ''
       this.statusEl.textContent = `Profile saved for ${updatedProfile.display_name || updatedProfile.email}.`
       document.dispatchEvent(
         new CustomEvent('profile-change', {
