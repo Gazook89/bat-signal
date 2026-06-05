@@ -556,10 +556,21 @@ export class FeedPage extends HTMLElement {
     listEl.innerHTML = '<ul class="feed-list">' + visibleSignals.map((signal) => {
       const name = signal.profiles?.display_name || signal.profiles?.email || 'A friend'
       const note = (signal.message || '').trim()
-      const destination = signal.resolved_destination || 'somewhere nearby'
-      const etaText = signal.eta_at
-        ? new Date(signal.eta_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-        : 'soon'
+      const destination = signal.resolved_destination || 'somewhere nearby';
+      console.log(signal.eta_at);
+      const now = new Date();
+      const eta = new Date(signal.eta_at);
+      const etaText = (() => {
+        if (!signal.eta_at) {
+          return ' soon';
+        } else if (eta < now){
+          return ' now-ish';
+        } else if (eta - now < 5 * 60 * 1000) {
+          return ', any minute now';
+        } else {
+          return ` at ${eta.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+        }
+      })()
       const expiresText = new Date(signal.expires_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
       const isOwnSignal = signal.user_id && signal.user_id === this.currentUserId
       const actionLabel = isOwnSignal ? 'Delete My Signal' : 'Dismiss'
@@ -568,22 +579,28 @@ export class FeedPage extends HTMLElement {
       return `
         <li>
           <article class="signal-card">
-            <header class="signal-card-header">
-              <p class="signal-summary"><strong>${name}</strong> is headed to <strong>${destination}</strong>.</p>
-            </header>
-            <dl class="signal-meta">
-              <div>
-                <dt>ETA</dt>
-                <dd>${etaText}</dd>
-              </div>
-              <div>
-                <dt>Expires</dt>
-                <dd>${expiresText}</dd>
-              </div>
-            </dl>
-            ${note ? `<p class="signal-message">${note}</p>` : ''}
-            <div class="signal-actions">
-              <button type="button" data-signal-action="${actionType}" data-signal-id="${signal.id}">${actionLabel}</button>
+            <div>
+              <header class="signal-card-header">
+                <p class="signal-summary"><span class="signal-user">${name}</span><span class="signal-destination"> ➤ <strong>${destination}</strong>${etaText}.</span></p>
+              </header>
+              <dl class="signal-meta">
+                <div>
+                  <dt>Expires</dt>
+                  <dd>${expiresText}</dd>
+                </div>
+              </dl>
+              ${note ? `<p class="signal-message">${note}</p>` : ''}
+            </div>
+            <div class="list-item-actions">
+              <button type="button" data-signal-action="${actionType}" data-signal-id="${signal.id}">
+                <svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="Trash--Streamline-Iconoir" height="16" width="16">
+                  <desc>
+                    Trash Streamline Icon: https://streamlinehq.com
+                  </desc>
+                  <path d="m12.96975 5.4488125 -1.3639999999999999 7.75775c-0.1149375 0.6538125 -0.6829375 1.130625 -1.34675 1.130625H4.7410000000000005c-0.663875 0 -1.2318125 -0.47681250000000003 -1.34675 -1.130625L2.03025 5.4488125" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+                  <path d="M13.653500000000001 3.3976875h-3.8459375000000002m-8.461062499999999 0h3.8459375000000002m0 0V2.03025c0 -0.75525 0.61225 -1.3674374999999999 1.3674374999999999 -1.3674374999999999h1.88025c0.75525 0 1.3674374999999999 0.6121875 1.3674374999999999 1.3674374999999999v1.3674374999999999m-4.615125 0h4.615125" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+                </svg>
+              </button>
             </div>
           </article>
         </li>

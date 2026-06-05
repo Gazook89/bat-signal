@@ -14,10 +14,7 @@ export class ProfilePage extends HTMLElement {
     this.handleSubmit = this.handleSubmit.bind(this)
     this.handleSignOut = this.handleSignOut.bind(this)
     this.handleDeleteAccount = this.handleDeleteAccount.bind(this)
-    this.handleBadgeEnabledChange = this.handleBadgeEnabledChange.bind(this)
     this.handleBadgeModeChange = this.handleBadgeModeChange.bind(this)
-    this.handleBadgePermissionRequest = this.handleBadgePermissionRequest.bind(this)
-    this.handleClearBadge = this.handleClearBadge.bind(this)
   }
 
   connectedCallback() {
@@ -29,10 +26,7 @@ export class ProfilePage extends HTMLElement {
     this.querySelector('#profile-form')?.removeEventListener('submit', this.handleSubmit)
     this.querySelector('#profile-sign-out-btn')?.removeEventListener('click', this.handleSignOut)
     this.querySelector('#profile-delete-account-btn')?.removeEventListener('click', this.handleDeleteAccount)
-    this.querySelector('#badge-enabled')?.removeEventListener('change', this.handleBadgeEnabledChange)
     this.querySelector('#badge-mode')?.removeEventListener('change', this.handleBadgeModeChange)
-    this.querySelector('#badge-request-permission-btn')?.removeEventListener('click', this.handleBadgePermissionRequest)
-    this.querySelector('#badge-clear-btn')?.removeEventListener('click', this.handleClearBadge)
   }
 
   render() {
@@ -59,22 +53,13 @@ export class ProfilePage extends HTMLElement {
             This only updates the app icon badge count. It does not send popup messages from this app.
             The badge counts other users' signals plus pending friend requests sent to you, and it excludes your own signal.
           </p>
-          <div class="form-group checkbox-row">
-            <label>
-              <input id="badge-enabled" type="checkbox" />
-              Enable app icon badge
-            </label>
-          </div>
           <div class="form-group">
-            <label for="badge-mode">Badge number shows</label>
+            <label for="badge-mode">Badge Setting</label>
             <select id="badge-mode">
-              <option value="new">New signals since you last opened Feed</option>
-              <option value="active">Total active signals from friends</option>
+              <option value="disabled">Badge Count is Disabled</option>
+              <option value="new">Unread Signals</option>
+              <option value="active">All Signals</option>
             </select>
-          </div>
-          <div class="signal-actions">
-            <button id="badge-request-permission-btn" type="button">Request Badge/Notification Permission</button>
-            <button id="badge-clear-btn" type="button">Clear Badge Now</button>
           </div>
           <p id="badge-status" class="small-note" role="status"></p>
           <p class="small-note">
@@ -102,23 +87,16 @@ export class ProfilePage extends HTMLElement {
     this.saveButtonEl = this.querySelector('button[type="submit"]')
     this.signOutButtonEl = this.querySelector('#profile-sign-out-btn')
     this.deleteAccountButtonEl = this.querySelector('#profile-delete-account-btn')
-    this.badgeEnabledEl = this.querySelector('#badge-enabled')
     this.badgeModeEl = this.querySelector('#badge-mode')
     this.badgeStatusEl = this.querySelector('#badge-status')
-    this.badgePermissionButtonEl = this.querySelector('#badge-request-permission-btn')
-    this.badgeClearButtonEl = this.querySelector('#badge-clear-btn')
 
     this.formEl.addEventListener('submit', this.handleSubmit)
     this.signOutButtonEl.addEventListener('click', this.handleSignOut)
     this.deleteAccountButtonEl.addEventListener('click', this.handleDeleteAccount)
-    this.badgeEnabledEl.addEventListener('change', this.handleBadgeEnabledChange)
     this.badgeModeEl.addEventListener('change', this.handleBadgeModeChange)
-    this.badgePermissionButtonEl.addEventListener('click', this.handleBadgePermissionRequest)
-    this.badgeClearButtonEl.addEventListener('click', this.handleClearBadge)
 
     const badgeSettings = getBadgeSettings()
-    this.badgeEnabledEl.checked = badgeSettings.enabled
-    this.badgeModeEl.value = badgeSettings.mode
+    this.badgeModeEl.value = badgeSettings.enabled ? badgeSettings.mode : 'disabled'
     this.badgeStatusEl.textContent = ''
   }
 
@@ -269,55 +247,39 @@ export class ProfilePage extends HTMLElement {
     }
   }
 
-  async handleBadgeEnabledChange() {
-    const enabled = this.badgeEnabledEl.checked
-    saveBadgeSettings({ enabled })
+  async handleBadgeModeChange() {
+    const mode = this.badgeModeEl.value
 
-    if (enabled) {
-      this.badgeStatusEl.textContent = 'Badge updates are enabled.'
-      markSignalsSeenNow()
-    } else {
+    if (mode === 'disabled') {
+      saveBadgeSettings({ enabled: false })
       await clearBadge()
-      this.badgeStatusEl.textContent = 'Badge updates are disabled and the current badge was cleared.'
+      this.badgeStatusEl.textContent = 'Badge count is disabled.'
+      document.dispatchEvent(new CustomEvent('badge-settings-change'))
+      return
     }
 
-    document.dispatchEvent(new CustomEvent('badge-settings-change'))
-  }
-
-  handleBadgeModeChange() {
-    const mode = this.badgeModeEl.value
-    saveBadgeSettings({ mode })
-    this.badgeStatusEl.textContent = mode === 'active'
-      ? 'Badge mode set to active signal count.'
-      : 'Badge mode set to new signals since last Feed visit.'
-
-    document.dispatchEvent(new CustomEvent('badge-settings-change'))
-  }
-
-  async handleBadgePermissionRequest() {
+    saveBadgeSettings({ enabled: true, mode })
     const result = await requestNotificationPermission()
 
     if (result === 'unsupported') {
-      this.badgeStatusEl.textContent = 'This browser does not expose notification permission controls here.'
-      return
+      this.badgeStatusEl.textContent = mode === 'active'
+        ? 'All Signals enabled. Browser permission controls are not exposed here.'
+        : 'Unread Signals enabled. Browser permission controls are not exposed here.'
+    } else if (result === 'granted') {
+      this.badgeStatusEl.textContent = mode === 'active'
+        ? 'Badge mode set to All Signals.'
+        : 'Badge mode set to Unread Signals.'
+    } else if (result === 'denied') {
+      this.badgeStatusEl.textContent = 'Badge mode saved, but permission is denied in browser/device settings.'
+    } else {
+      this.badgeStatusEl.textContent = 'Badge mode saved. Permission prompt was dismissed.'
     }
 
-    if (result === 'granted') {
-      this.badgeStatusEl.textContent = 'Permission granted. Badge support depends on your OS/browser/PWA install.'
-      return
+    if (mode === 'new') {
+      markSignalsSeenNow()
     }
 
-    if (result === 'denied') {
-      this.badgeStatusEl.textContent = 'Permission denied. You can re-enable it later in browser/device settings.'
-      return
-    }
-
-    this.badgeStatusEl.textContent = 'Permission prompt dismissed.'
-  }
-
-  async handleClearBadge() {
-    await clearBadge()
-    this.badgeStatusEl.textContent = 'Badge cleared.'
+    document.dispatchEvent(new CustomEvent('badge-settings-change'))
   }
 }
 

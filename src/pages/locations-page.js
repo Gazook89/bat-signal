@@ -120,12 +120,30 @@ export class LocationsPage extends HTMLElement {
       const website = row.custom_website || row.locations_global?.website || ''
       return `
         <li data-location-id="${row.id}">
+          <div>
           <strong>${name}</strong>${row.is_starred ? ' (starred)' : ''}
-          ${address ? `<br /><small>${address}</small>` : ''}
+          ${address ? `<small>${address}</small>` : ''}
           ${website ? `<br /><small><a href="${website}" target="_blank" rel="noopener noreferrer">${website}</a></small>` : ''}
-          <div class="signal-actions">
-            <button type="button" data-action="edit" data-location-id="${row.id}">Edit</button>
-            <button type="button" data-action="delete" data-location-id="${row.id}">Delete</button>
+          </div>
+          <div class="list-item-actions">
+            <button type="button" data-action="edit" data-location-id="${row.id}">
+              <svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="Edit--Streamline-Iconoir" height="16" width="16">
+                <desc>
+                  Edit Streamline Icon: https://streamlinehq.com
+                </desc>
+                <path d="M0.7153750000000001 14.284625h13.56925" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+                <path d="m7.6671875 2.8475625 2.13225 -2.1321875 3.7313125000000005 3.731375 -2.1321875 2.132125m-3.731375 -3.7313125000000005 -4.226500000000001 4.226500000000001c-0.1413125 0.141375 -0.22075 0.333125 -0.22075 0.5330625v3.4190625000000003h3.419125c0.19987499999999997 0 0.391625 -0.079375 0.533 -0.2208125l4.226500000000001 -4.226500000000001m-3.731375 -3.7313125000000005 3.731375 3.7313125000000005" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+              </svg>
+            </button>
+            <button type="button" data-action="delete" data-location-id="${row.id}">
+              <svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="Trash--Streamline-Iconoir" height="16" width="16">
+                <desc>
+                  Trash Streamline Icon: https://streamlinehq.com
+                </desc>
+                <path d="m12.96975 5.4488125 -1.3639999999999999 7.75775c-0.1149375 0.6538125 -0.6829375 1.130625 -1.34675 1.130625H4.7410000000000005c-0.663875 0 -1.2318125 -0.47681250000000003 -1.34675 -1.130625L2.03025 5.4488125" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+                <path d="M13.653500000000001 3.3976875h-3.8459375000000002m-8.461062499999999 0h3.8459375000000002m0 0V2.03025c0 -0.75525 0.61225 -1.3674374999999999 1.3674374999999999 -1.3674374999999999h1.88025c0.75525 0 1.3674374999999999 0.6121875 1.3674374999999999 1.3674374999999999v1.3674374999999999m-4.615125 0h4.615125" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+              </svg>
+            </button>
           </div>
         </li>
       `
