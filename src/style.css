@@ -19,7 +19,7 @@
 }
 
 :root {
-  --primary-color: #4B0082;
+  --primary-color: #1a7197;
   --text-color: #1c1c1c;
   --background-color: ghostwhite;
 
@@ -40,6 +40,7 @@ html {
   background-attachment: fixed, inherit;
   background-blend-mode: darken, hard-light;
   overflow: hidden;
+  max-width: 500px;
 }
 
 
@@ -53,12 +54,21 @@ svg#svg-background {
 body {
   position: absolute;
   inset: 0;
-  margin: 0;
+  margin: 0 auto;
   padding: 0;
   min-height: 100dvh; 
+  max-width: 500px;
   display: flex;
   flex-direction: column;
+  scrollbar-width: thin;
+  ::-webkit-scrollbar {
+    width: 6px;
 
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--primary-color);
+    border-radius: 4px;
+  }
   header {
     flex: 0 0 auto;
     h1 {
@@ -273,7 +283,19 @@ form {
     font-family: var(--brand-font);
   }
   label:has(input[type="checkbox"]) {
-    text-align: center;
+    text-align: left;
+    border: 1px solid var(--text-color);
+    padding: 0.5rem;
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    [type="checkbox"] {
+      border: 1px solid var(--text-color);
+      accent-color: black;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
   }
 }
 
@@ -310,8 +332,14 @@ select {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 0 .5rem;
     &:nth-child(odd) {
       background: #0001;
+    }
+    > div > svg {
+      position: relative;
+      top: 1px;
+      fill: gold;
     }
   }
 }
@@ -370,6 +398,12 @@ button:has(svg) {
   padding: 5px;
   aspect-ratio: 1;
   border-radius: 50%;
+}
+
+.primary-button {
+  border-color: var(--primary-color);
+  background: oklch(from var(--primary-color) l c h / 0.1);
+  color: var(--primary-color);
 }
 
 .danger-button {

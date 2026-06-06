@@ -43,7 +43,7 @@ export class ProfilePage extends HTMLElement {
           <input type="text" id="profile-display-name" autocomplete="name" placeholder="How friends should see you" />
         </div>
         <div class="signal-actions">
-          <button type="submit">Save Profile</button>
+          <button type="submit" class="primary-button">Save Profile</button>
           <button id="profile-sign-out-btn" type="button">Sign Out</button>
         </div>
 

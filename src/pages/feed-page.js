@@ -5,6 +5,9 @@ import {
   syncDismissedSignalIds
 } from '../lib/badge.js'
 
+const OPEN_PLAY_OPTION_VALUE = '__open_play__'
+const OPEN_PLAY_DESTINATION = 'looking for something to do'
+
 export class FeedPage extends HTMLElement {
   constructor() {
     super()
@@ -97,8 +100,22 @@ export class FeedPage extends HTMLElement {
       return
     }
 
-    this.userLocations = data || []
+    this.userLocations = this.sortLocations(data || [])
     this.renderLocationOptions()
+  }
+
+  getLocationLabel(row) {
+    return row.custom_name || row.locations_global?.name || 'Unnamed place'
+  }
+
+  sortLocations(rows) {
+    return [...rows].sort((a, b) => {
+      if (Boolean(a.is_starred) !== Boolean(b.is_starred)) {
+        return a.is_starred ? -1 : 1
+      }
+
+      return this.getLocationLabel(a).localeCompare(this.getLocationLabel(b), undefined, { sensitivity: 'base' })
+    })
   }
 
   renderLocationOptions() {
@@ -109,8 +126,9 @@ export class FeedPage extends HTMLElement {
 
     const options = [
       '<option value="">Select a saved place</option>',
+      '<option value="__open_play__">I\'m free to play (no destination)</option>',
       ...this.userLocations.map((row) => {
-        const name = row.custom_name || row.locations_global?.name || 'Unnamed place'
+        const name = this.getLocationLabel(row)
         return `<option value="${row.id}">${name}${row.is_starred ? ' (starred)' : ''}</option>`
       }),
       '<option value="__custom__">Use one-time custom destination</option>'
@@ -186,10 +204,13 @@ export class FeedPage extends HTMLElement {
     const submitBtn = this.querySelector('#signal-submit')
 
     const isCustom = selectedLocationId === '__custom__'
+    const isOpenPlay = selectedLocationId === OPEN_PLAY_OPTION_VALUE
     const selectedLocation = this.userLocations.find((row) => row.id === selectedLocationId)
-    const destination = isCustom
+    const destination = isOpenPlay
+      ? OPEN_PLAY_DESTINATION
+      : isCustom
       ? customDestination
-      : (selectedLocation?.custom_name || selectedLocation?.locations_global?.name || '')
+      : (selectedLocation ? this.getLocationLabel(selectedLocation) : '')
 
     if (!destination || !etaInput) {
       if (statusEl) {
@@ -228,7 +249,7 @@ export class FeedPage extends HTMLElement {
       }
 
       let locationId = selectedLocation?.global_location_id || null
-      const userLocationId = isCustom ? null : (selectedLocation?.id || null)
+      const userLocationId = (isCustom || isOpenPlay) ? null : (selectedLocation?.id || null)
 
       if (!locationId) {
         locationId = await this.resolveLocationId(destination, user.id)
@@ -550,7 +571,7 @@ export class FeedPage extends HTMLElement {
             </select>
           </div>
           <div class="signal-actions">
-            <button id="signal-submit" type="submit">Send Signal</button>
+            <button id="signal-submit" type="submit" class="primary-button">Send Signal</button>
             <button id="cancel-signal-composer" type="button">Cancel</button>
           </div>
           <p id="signal-status" role="status"></p>
@@ -594,13 +615,17 @@ export class FeedPage extends HTMLElement {
       const isOwnSignal = signal.user_id && signal.user_id === this.currentUserId
       const actionLabel = isOwnSignal ? 'Delete My Signal' : 'Dismiss'
       const actionType = isOwnSignal ? 'delete' : 'dismiss'
+      const isOpenPlaySignal = destination.toLowerCase() === OPEN_PLAY_DESTINATION
 
       return `
         <li>
           <article class="signal-card">
             <div>
               <header class="signal-card-header">
-                <p class="signal-summary"><span class="signal-user">${name}</span><span class="signal-destination"> ➤ <strong>${destination}</strong>${etaText}.</span></p>
+                <p class="signal-summary">${isOpenPlaySignal
+                  ? `<span class="signal-user">${name}</span><span class="signal-destination"> is <strong>${OPEN_PLAY_DESTINATION}</strong>${etaText}.</span>`
+                  : `<span class="signal-user">${name}</span><span class="signal-destination"> ➤ <strong>${destination}</strong>${etaText}.</span>`}
+                </p>
               </header>
               <dl class="signal-meta">
                 <div>

@@ -47,7 +47,7 @@ export class FriendsPage extends HTMLElement {
               autocomplete="off"
             />
           </div>
-          <button id="friend-search-btn" type="submit">Search</button>
+          <button id="friend-search-btn" type="submit" class="primary-button">Search</button>
         </form>
 
         <p id="friends-status" role="status"></p>

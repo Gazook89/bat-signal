@@ -51,9 +51,16 @@ export class LocationsPage extends HTMLElement {
             <input id="location-starred" type="checkbox" />
           </label>
         </div>
+        <div class="form-group checkbox-row">
+          <label>
+            Share anonymized copy for community location trends
+            <input id="location-share-anonymized" type="checkbox" />
+          </label>
+          <p><small>Please don't share any home addresses or other sensitive location information.  Addresses are completely optional.</small></p>
+        </div>
 
         <div class="signal-actions">
-          <button id="save-location-btn" type="submit">Save Place</button>
+          <button id="save-location-btn" type="submit" class="primary-button">Save Place</button>
           <button id="cancel-location-edit" type="button" hidden>Cancel Edit</button>
         </div>
         <p id="location-status" role="status"></p>
@@ -102,8 +109,22 @@ export class LocationsPage extends HTMLElement {
       return
     }
 
-    this.locations = data || []
+    this.locations = this.sortLocations(data || [])
     this.renderList()
+  }
+
+  getLocationLabel(row) {
+    return row.custom_name || row.locations_global?.name || 'Unnamed place'
+  }
+
+  sortLocations(rows) {
+    return [...rows].sort((a, b) => {
+      if (Boolean(a.is_starred) !== Boolean(b.is_starred)) {
+        return a.is_starred ? -1 : 1
+      }
+
+      return this.getLocationLabel(a).localeCompare(this.getLocationLabel(b), undefined, { sensitivity: 'base' })
+    })
   }
 
   renderList() {
@@ -114,14 +135,23 @@ export class LocationsPage extends HTMLElement {
       return
     }
 
+    const starSVG = (
+      `<svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="Star--Streamline-Iconoir" height="16" width="16">
+      <desc>
+        Star Streamline Icon: https://streamlinehq.com
+      </desc>
+      <path d="m5.1666875 4.9264375 1.776 -3.577375c0.22793750000000002 -0.4591875 0.8866875000000001 -0.4591875 1.114625 0l1.7759375 3.577375 3.9716875000000003 0.57725c0.5095625 0.07400000000000001 0.7126250000000001 0.6968125000000001 0.34375 1.0540625000000001l-2.8733750000000002 2.7826875 0.678125 3.9311249999999998c0.0870625 0.504875 -0.445875 0.8898125 -0.901875 0.651375L7.5 12.065874999999998l-3.551625 1.8570624999999998c-0.4559375 0.2384375 -0.9888750000000001 -0.1465 -0.9018125 -0.651375l0.678125 -3.9311249999999998 -2.8733750000000002 -2.7826875c-0.36893750000000003 -0.35725 -0.16581249999999997 -0.9800625000000001 0.34375 -1.0540625000000001l3.9716249999999995 -0.57725Z" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+    </svg>`
+    )
+
     listEl.innerHTML = '<ul>' + this.locations.map((row) => {
-      const name = row.custom_name || row.locations_global?.name || 'Unnamed place'
+      const name = this.getLocationLabel(row)
       const address = row.custom_address || row.locations_global?.address || ''
       const website = row.custom_website || row.locations_global?.website || ''
       return `
         <li data-location-id="${row.id}">
           <div>
-          <strong>${name}</strong>${row.is_starred ? ' (starred)' : ''}
+          ${row.is_starred ? ` ${starSVG} ` : ''}<strong>${name}</strong>
           ${address ? `<small>${address}</small>` : ''}
           ${website ? `<br /><small><a href="${website}" target="_blank" rel="noopener noreferrer">${website}</a></small>` : ''}
           </div>
@@ -178,6 +208,7 @@ export class LocationsPage extends HTMLElement {
       this.querySelector('#location-address').value = row.custom_address || row.locations_global?.address || ''
       this.querySelector('#location-website').value = row.custom_website || row.locations_global?.website || ''
       this.querySelector('#location-starred').checked = Boolean(row.is_starred)
+      this.querySelector('#location-share-anonymized').checked = false
       this.querySelector('#save-location-btn').textContent = 'Update Place'
       this.querySelector('#cancel-location-edit').hidden = false
       this.querySelector('#location-status').textContent = ''
@@ -212,6 +243,7 @@ export class LocationsPage extends HTMLElement {
     const address = this.querySelector('#location-address').value.trim()
     const website = this.querySelector('#location-website').value.trim()
     const isStarred = this.querySelector('#location-starred').checked
+    const shareAnonymized = this.querySelector('#location-share-anonymized').checked
     const statusEl = this.querySelector('#location-status')
 
     if (!name) {
@@ -259,7 +291,26 @@ export class LocationsPage extends HTMLElement {
       return
     }
 
-    statusEl.textContent = this.editingId ? 'Place updated.' : 'Place saved.'
+    let contributed = false
+    if (shareAnonymized) {
+      const { error: contributionError } = await supabase.rpc('contribute_location_to_catalog', {
+        p_name: name,
+        p_address: address || null,
+        p_website: website || null
+      })
+
+      if (contributionError) {
+        console.error(contributionError)
+      } else {
+        contributed = true
+      }
+    }
+
+    if (this.editingId) {
+      statusEl.textContent = contributed ? 'Place updated. Shared anonymously.' : 'Place updated.'
+    } else {
+      statusEl.textContent = contributed ? 'Place saved. Shared anonymously.' : 'Place saved.'
+    }
     this.handleCancelEdit()
     await this.loadLocations()
   }
