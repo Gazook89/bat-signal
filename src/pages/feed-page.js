@@ -144,7 +144,7 @@ export class FeedPage extends HTMLElement {
     const etaEl = this.querySelector('#signal-eta')
 
     if (etaEl && !etaEl.value) {
-      etaEl.value = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+      etaEl.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
     }
 
     if (composer) {
@@ -198,10 +198,10 @@ export class FeedPage extends HTMLElement {
       return
     }
 
-    const etaDate = new Date(etaInput)
+    const etaDate = this.getTodayEtaDate(etaInput)
     if (Number.isNaN(etaDate.getTime())) {
       if (statusEl) {
-        statusEl.textContent = 'Please provide a valid ETA.'
+        statusEl.textContent = 'Please provide a valid arrival time.'
       }
       return
     }
@@ -359,6 +359,25 @@ export class FeedPage extends HTMLElement {
     throw new Error('Could not resolve destination location.')
   }
 
+  getTodayEtaDate(etaInput) {
+    if (!etaInput || !etaInput.includes(':')) {
+      return new Date('invalid')
+    }
+
+    const [hourRaw, minuteRaw] = etaInput.split(':')
+    const hours = Number(hourRaw)
+    const minutes = Number(minuteRaw)
+
+    if (!Number.isInteger(hours) || !Number.isInteger(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+      return new Date('invalid')
+    }
+
+    const etaDate = new Date()
+    etaDate.setSeconds(0, 0)
+    etaDate.setHours(hours, minutes, 0, 0)
+    return etaDate
+  }
+
   async loadSignals() {
     const now = new Date().toISOString()
     const { data, error } = await supabase
@@ -514,7 +533,7 @@ export class FeedPage extends HTMLElement {
           </div>
           <div class="form-group">
             <label for="signal-eta">Expected Arrival Time</label>
-            <input type="datetime-local" id="signal-eta" required />
+            <input type="time" id="signal-eta" required />
           </div>
           <div class="form-group">
             <label for="signal-message">Message</label>
