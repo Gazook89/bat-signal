@@ -1,8 +1,8 @@
 {
   "name": "Kid Collider",
   "short_name": "Kid Collider",
-  "description": "A Progressive Web App",
-  "start_url": "/index.html",
+  "description": "Play, together.",
+  "start_url": "https://gazook89.github.io/kid-collider/",
   "display": "standalone",
   "background_color": "#001e57",
   "theme_color": "#001e57",
