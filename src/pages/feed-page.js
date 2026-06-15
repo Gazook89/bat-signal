@@ -1,4 +1,5 @@
 import { supabase } from '../supabase.js'
+import { toDisplayHandle } from '../lib/profile.js'
 import {
   dismissSignal,
   getVisibleSignals,
@@ -405,7 +406,7 @@ export class FeedPage extends HTMLElement {
       .from('signals')
       .select(`
         *,
-        profiles (email, display_name)
+        profiles (email, display_name, display_tag)
       `)
       .gt('expires_at', now)
       .order('created_at', { ascending: false })
@@ -594,7 +595,10 @@ export class FeedPage extends HTMLElement {
     }
 
     listEl.innerHTML = '<ul class="feed-list">' + visibleSignals.map((signal) => {
-      const name = signal.profiles?.display_name || signal.profiles?.email || 'A friend'
+      const handle = toDisplayHandle(signal.profiles, 'A friend')
+      const name = handle.tag
+        ? `${handle.base} <span class="display-tag">#${handle.tag}</span>`
+        : handle.base
       const note = (signal.message || '').trim()
       const destination = signal.resolved_destination || 'somewhere nearby';
       console.log(signal.eta_at);

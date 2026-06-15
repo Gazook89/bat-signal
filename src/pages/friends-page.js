@@ -1,14 +1,17 @@
 import { supabase } from '../supabase.js'
+import { toDisplayHandle } from '../lib/profile.js'
 
 export class FriendsPage extends HTMLElement {
   constructor() {
     super()
     this.user = null
+    this.currentUserProfile = null
     this.relationships = []
     this.profileMap = new Map()
     this.searchResults = []
     this.handleSearchSubmit = this.handleSearchSubmit.bind(this)
     this.handleFriendActionClick = this.handleFriendActionClick.bind(this)
+    this.handleCopyPublicHandle = this.handleCopyPublicHandle.bind(this)
   }
 
   connectedCallback() {
@@ -24,17 +27,19 @@ export class FriendsPage extends HTMLElement {
   bindEvents() {
     this.querySelector('#friend-search-form')?.addEventListener('submit', this.handleSearchSubmit)
     this.querySelector('#friends-page')?.addEventListener('click', this.handleFriendActionClick)
+    this.querySelector('#friends-copy-public-handle-btn')?.addEventListener('click', this.handleCopyPublicHandle)
   }
 
   unbindEvents() {
     this.querySelector('#friend-search-form')?.removeEventListener('submit', this.handleSearchSubmit)
     this.querySelector('#friends-page')?.removeEventListener('click', this.handleFriendActionClick)
+    this.querySelector('#friends-copy-public-handle-btn')?.removeEventListener('click', this.handleCopyPublicHandle)
   }
 
   render() {
     this.innerHTML = `
       <section id="friends-page">
-        <p>Search by exact display name or exact registered email to connect.</p>
+        <p>Search by exact handle (Display Name #1234) or exact registered email to connect.</p>
 
         <form id="friend-search-form">
           <div class="form-group">
@@ -43,12 +48,25 @@ export class FriendsPage extends HTMLElement {
               id="friend-search-term"
               type="text"
               required
-              placeholder="Exact display name or email"
+              placeholder="Exact handle (Name #1234) or email"
               autocomplete="off"
             />
           </div>
           <button id="friend-search-btn" type="submit" class="primary-button">Search</button>
         </form>
+
+        <div class="profile-handle-row">
+          <p id="friends-display-handle" class="small-note"></p>
+          <button id="friends-copy-public-handle-btn" type="button" class="small-copy-button" disabled>
+            <svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="Copy--Streamline-Iconoir" height="16" width="16">
+              <desc>
+                Copy Streamline Icon: https://streamlinehq.com
+              </desc>
+              <path d="M13.716 14.219999999999999H5.484c-0.27837500000000004 0 -0.504 -0.225625 -0.504 -0.504V5.484c0 -0.27837500000000004 0.225625 -0.504 0.504 -0.504h8.232000000000001c0.27837500000000004 0 0.504 0.225625 0.504 0.504v8.232000000000001c0 0.27837500000000004 -0.225625 0.504 -0.504 0.504Z" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+              <path d="M10.02 4.98V1.2839999999999998c0 -0.27837500000000004 -0.225625 -0.504 -0.504 -0.504H1.2839999999999998c-0.27837500000000004 0 -0.504 0.225625 -0.504 0.504v8.232000000000001c0 0.27837500000000004 0.225625 0.504 0.504 0.504H4.98" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+            </svg>
+          </button>
+        </div>
 
         <p id="friends-status" role="status"></p>
 
@@ -91,6 +109,8 @@ export class FriendsPage extends HTMLElement {
     }
 
     this.user = userData.user
+    await this.loadCurrentUserProfile()
+    this.updateCurrentUserHandle()
 
     const { data, error } = await supabase
       .from('friendships')
@@ -107,6 +127,46 @@ export class FriendsPage extends HTMLElement {
     await this.loadProfilesForRelationships()
     this.renderSections()
     statusEl.textContent = ''
+  }
+
+  async loadCurrentUserProfile() {
+    if (!this.user?.id) {
+      this.currentUserProfile = null
+      return
+    }
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, email, display_name, display_tag')
+      .eq('id', this.user.id)
+      .maybeSingle()
+
+    if (error) {
+      console.error(error)
+      this.currentUserProfile = null
+      return
+    }
+
+    this.currentUserProfile = data || null
+  }
+
+  updateCurrentUserHandle() {
+    const handleEl = this.querySelector('#friends-display-handle')
+    const copyButtonEl = this.querySelector('#friends-copy-public-handle-btn')
+    if (!handleEl || !copyButtonEl) {
+      return
+    }
+
+    const fallback = this.user?.email || 'User'
+    const handle = toDisplayHandle(this.currentUserProfile, fallback)
+
+    if (handle.tag) {
+      handleEl.textContent = `Your public handle: ${handle.full}`
+      copyButtonEl.disabled = false
+    } else {
+      handleEl.textContent = 'Your 4-digit handle tag will be assigned automatically.'
+      copyButtonEl.disabled = true
+    }
   }
 
   async loadProfilesForRelationships() {
@@ -129,7 +189,7 @@ export class FriendsPage extends HTMLElement {
     } else {
       const fallback = await supabase
         .from('profiles')
-        .select('id, email, display_name')
+        .select('id, email, display_name, display_tag')
         .in('id', ids)
 
       if (!fallback.error) {
@@ -184,14 +244,14 @@ export class FriendsPage extends HTMLElement {
     container.innerHTML = '<ul class="friend-list">' + rows.map((row) => {
       const otherId = row.requester_id === this.user.id ? row.addressee_id : row.requester_id
       const profile = this.profileMap.get(otherId)
-      const label = this.escapeHtml(this.formatProfileLabel(profile, otherId))
+      const handleMarkup = this.renderHandleMarkup(profile, otherId)
       const secondary = profile?.display_name && profile?.email
         ? `<small>${this.escapeHtml(profile.email)}</small>`
         : ''
 
       return `
         <li>
-          <strong>${label}</strong>
+          ${handleMarkup}
           ${secondary}
           ${actionsTemplate(row, otherId)}
         </li>
@@ -199,14 +259,34 @@ export class FriendsPage extends HTMLElement {
     }).join('') + '</ul>'
   }
 
-  formatProfileLabel(profile, fallbackId) {
-    if (profile?.display_name) {
-      return profile.display_name
+  getProfileHandle(profile, fallbackId) {
+    return toDisplayHandle(profile, `User ${String(fallbackId).slice(0, 8)}`)
+  }
+
+  renderHandleMarkup(profile, fallbackId) {
+    const handle = this.getProfileHandle(profile, fallbackId)
+    const safeBase = this.escapeHtml(handle.base)
+
+    if (!handle.tag) {
+      return `<strong>${safeBase}</strong>`
     }
-    if (profile?.email) {
-      return profile.email
+
+    return `<span class="display-handle"><strong>${safeBase}</strong><span class="display-tag">#${handle.tag}</span></span>`
+  }
+
+  parseHandleTerm(term) {
+    const match = String(term || '').trim().match(/^(.*)\s+#([0-9]{4})$/)
+    if (!match) {
+      return null
     }
-    return `User ${String(fallbackId).slice(0, 8)}`
+
+    const name = match[1].trim()
+    const tag = Number(match[2])
+    if (!name || Number.isNaN(tag)) {
+      return null
+    }
+
+    return { name, tag }
   }
 
   findRelationshipWithUser(targetId) {
@@ -225,7 +305,7 @@ export class FriendsPage extends HTMLElement {
 
     const term = termInput?.value.trim() || ''
     if (!term) {
-      statusEl.textContent = 'Please enter an exact email or exact display name.'
+      statusEl.textContent = 'Please enter an exact email or exact handle (Display Name #1234).'
       return
     }
 
@@ -237,10 +317,24 @@ export class FriendsPage extends HTMLElement {
       results = rpc.data || []
     } else {
       const normalizedEmail = term.toLowerCase()
-      const [emailMatch, nameMatch] = await Promise.all([
-        supabase.from('profiles').select('id, email, display_name').eq('email', normalizedEmail),
-        supabase.from('profiles').select('id, email, display_name').eq('display_name', term)
-      ])
+      const parsedHandle = this.parseHandleTerm(term)
+      const emailQuery = supabase
+        .from('profiles')
+        .select('id, email, display_name, display_tag')
+        .eq('email', normalizedEmail)
+
+      const handleQuery = parsedHandle
+        ? supabase
+          .from('profiles')
+          .select('id, email, display_name, display_tag')
+          .eq('display_name', parsedHandle.name)
+          .eq('display_tag', parsedHandle.tag)
+        : supabase
+          .from('profiles')
+          .select('id, email, display_name, display_tag')
+          .eq('display_name', term)
+
+      const [emailMatch, nameMatch] = await Promise.all([emailQuery, handleQuery])
 
       if (emailMatch.error && nameMatch.error) {
         statusEl.textContent = (emailMatch.error || nameMatch.error).message || 'Could not search profiles.'
@@ -273,13 +367,13 @@ export class FriendsPage extends HTMLElement {
     }
 
     container.innerHTML = '<ul class="friend-list">' + this.searchResults.map((profile) => {
-      const label = this.escapeHtml(this.formatProfileLabel(profile, profile.id))
+      const handleMarkup = this.renderHandleMarkup(profile, profile.id)
       const relationship = this.findRelationshipWithUser(profile.id)
       const buttonMarkup = this.renderConnectButton(relationship, profile.id)
 
       return `
         <li>
-          <strong>${label}</strong>
+          ${handleMarkup}
           ${profile.email ? `<small>${this.escapeHtml(profile.email)}</small>` : ''}
           <div class="signal-actions">
             ${buttonMarkup}
@@ -426,6 +520,46 @@ export class FriendsPage extends HTMLElement {
     } catch (error) {
       console.error(error)
       statusEl.textContent = error.message || 'Could not complete this action.'
+    }
+  }
+
+  async handleCopyPublicHandle() {
+    const statusEl = this.querySelector('#friends-status')
+    const handle = toDisplayHandle(this.currentUserProfile, this.user?.email || 'User')
+
+    if (!handle.tag) {
+      statusEl.textContent = 'Your handle tag is not available yet. Save your profile first.'
+      return
+    }
+
+    try {
+      await this.copyTextToClipboard(handle.full)
+      statusEl.textContent = 'Public handle copied to clipboard.'
+    } catch (error) {
+      console.error(error)
+      statusEl.textContent = 'Could not copy automatically. Please copy your handle manually.'
+    }
+  }
+
+  async copyTextToClipboard(value) {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value)
+      return
+    }
+
+    const textarea = document.createElement('textarea')
+    textarea.value = value
+    textarea.setAttribute('readonly', '')
+    textarea.style.position = 'fixed'
+    textarea.style.top = '-1000px'
+    this.append(textarea)
+    textarea.select()
+
+    const copied = document.execCommand('copy')
+    textarea.remove()
+
+    if (!copied) {
+      throw new Error('Clipboard copy failed.')
     }
   }
 

@@ -1,6 +1,6 @@
 import { supabase } from './supabase.js'
 import './pages/auth-page.js'
-import { ensureProfileRecord } from './lib/profile.js'
+import { ensureProfileRecord, toDisplayHandle } from './lib/profile.js'
 import {
   applyBadgeCount,
   clearBadge,
@@ -170,10 +170,22 @@ function setCurrentUserDisplay(profile, user) {
     return
   }
 
-  const label = profile?.display_name || profile?.email || user?.user_metadata?.display_name || user?.email || ''
+  const fallback = user?.user_metadata?.display_name || user?.email || ''
+  const handle = toDisplayHandle(profile, fallback)
 
-  if (label) {
-    currentUserEl.textContent = label
+  if (handle.base) {
+    currentUserEl.textContent = ''
+
+    const baseEl = document.createElement('span')
+    baseEl.textContent = handle.base
+    currentUserEl.append(baseEl)
+
+    if (handle.tag) {
+      const tagEl = document.createElement('span')
+      tagEl.className = 'display-tag'
+      tagEl.textContent = `#${handle.tag}`
+      currentUserEl.append(tagEl)
+    }
   } else {
     currentUserEl.textContent = ''
   }

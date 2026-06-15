@@ -1,3 +1,23 @@
+const HANDLE_SUFFIX_REGEX = /\s*#[0-9]{4}\s*$/u
+
+export function sanitizeDisplayNameInput(value) {
+  return String(value || '')
+    .replace(HANDLE_SUFFIX_REGEX, '')
+    .trim()
+}
+
+export function toDisplayHandle(profile, fallback = 'User') {
+  const base = String(profile?.display_name || profile?.email || fallback || 'User').trim() || 'User'
+  const hasNumericTag = Number.isInteger(profile?.display_tag)
+  const tag = hasNumericTag ? String(profile.display_tag).padStart(4, '0') : null
+
+  return {
+    base,
+    tag,
+    full: tag ? `${base} #${tag}` : base
+  }
+}
+
 export async function ensureProfileRecord(supabase, user) {
   if (!user) {
     return null
@@ -5,7 +25,7 @@ export async function ensureProfileRecord(supabase, user) {
 
   const { data: existing, error: existingError } = await supabase
     .from('profiles')
-    .select('id, email, phone_number, display_name')
+    .select('id, email, phone_number, display_name, display_tag')
     .eq('id', user.id)
     .maybeSingle()
 
@@ -18,7 +38,7 @@ export async function ensureProfileRecord(supabase, user) {
   }
 
   const email = String(user.email || '').trim().toLowerCase()
-  const displayName = user.user_metadata?.display_name || null
+  const displayName = sanitizeDisplayNameInput(user.user_metadata?.display_name) || null
   const phoneNumber = user.user_metadata?.phone_number || null
 
   const { data: created, error: createError } = await supabase
@@ -32,7 +52,7 @@ export async function ensureProfileRecord(supabase, user) {
       },
       { onConflict: 'id' }
     )
-    .select('id, email, phone_number, display_name')
+    .select('id, email, phone_number, display_name, display_tag')
     .single()
 
   if (createError) {
@@ -45,7 +65,7 @@ export async function ensureProfileRecord(supabase, user) {
 export async function fetchProfileRecord(supabase, userId) {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, email, phone_number, display_name')
+    .select('id, email, phone_number, display_name, display_tag')
     .eq('id', userId)
     .maybeSingle()
 
@@ -58,7 +78,7 @@ export async function fetchProfileRecord(supabase, userId) {
 
 export async function saveProfileRecord(supabase, user, { displayName, phoneNumber }) {
   const normalizedEmail = String(user.email || '').trim().toLowerCase()
-  const normalizedDisplayName = String(displayName || '').trim() || null
+  const normalizedDisplayName = sanitizeDisplayNameInput(displayName) || null
   const normalizedPhoneNumber = phoneNumber?.trim() || null
 
   const { data, error } = await supabase
@@ -72,7 +92,7 @@ export async function saveProfileRecord(supabase, user, { displayName, phoneNumb
       },
       { onConflict: 'id' }
     )
-    .select('id, email, phone_number, display_name')
+    .select('id, email, phone_number, display_name, display_tag')
     .single()
 
   if (error) {

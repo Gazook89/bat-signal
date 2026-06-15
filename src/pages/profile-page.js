@@ -1,5 +1,5 @@
 import { supabase } from '../supabase.js'
-import { fetchProfileRecord, saveProfileRecord } from '../lib/profile.js'
+import { fetchProfileRecord, saveProfileRecord, toDisplayHandle } from '../lib/profile.js'
 import {
   clearBadge,
   getBadgeSettings,
@@ -15,6 +15,7 @@ export class ProfilePage extends HTMLElement {
     this.handleSignOut = this.handleSignOut.bind(this)
     this.handleDeleteAccount = this.handleDeleteAccount.bind(this)
     this.handleBadgeModeChange = this.handleBadgeModeChange.bind(this)
+    this.handleCopyPublicHandle = this.handleCopyPublicHandle.bind(this)
   }
 
   connectedCallback() {
@@ -27,6 +28,7 @@ export class ProfilePage extends HTMLElement {
     this.querySelector('#profile-sign-out-btn')?.removeEventListener('click', this.handleSignOut)
     this.querySelector('#profile-delete-account-btn')?.removeEventListener('click', this.handleDeleteAccount)
     this.querySelector('#badge-mode')?.removeEventListener('change', this.handleBadgeModeChange)
+    this.querySelector('#copy-public-handle-btn')?.removeEventListener('click', this.handleCopyPublicHandle)
   }
 
   render() {
@@ -41,6 +43,18 @@ export class ProfilePage extends HTMLElement {
         <div class="form-group">
           <label for="profile-display-name">Display name</label>
           <input type="text" id="profile-display-name" autocomplete="name" placeholder="How friends should see you" />
+          <div class="profile-handle-row">
+            <p id="profile-display-handle" class="small-note"></p>
+            <button id="copy-public-handle-btn" type="button" class="small-copy-button">
+              <svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="Copy--Streamline-Iconoir" height="16" width="16">
+                <desc>
+                  Copy Streamline Icon: https://streamlinehq.com
+                </desc>
+                <path d="M13.716 14.219999999999999H5.484c-0.27837500000000004 0 -0.504 -0.225625 -0.504 -0.504V5.484c0 -0.27837500000000004 0.225625 -0.504 0.504 -0.504h8.232000000000001c0.27837500000000004 0 0.504 0.225625 0.504 0.504v8.232000000000001c0 0.27837500000000004 -0.225625 0.504 -0.504 0.504Z" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+                <path d="M10.02 4.98V1.2839999999999998c0 -0.27837500000000004 -0.225625 -0.504 -0.504 -0.504H1.2839999999999998c-0.27837500000000004 0 -0.504 0.225625 -0.504 0.504v8.232000000000001c0 0.27837500000000004 0.225625 0.504 0.504 0.504H4.98" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+              </svg>
+            </button>
+          </div>
         </div>
         <div class="signal-actions">
           <button type="submit" class="primary-button">Save Profile</button>
@@ -84,6 +98,8 @@ export class ProfilePage extends HTMLElement {
     this.formEl = this.querySelector('#profile-form')
     this.emailEl = this.querySelector('#profile-email')
     this.displayNameEl = this.querySelector('#profile-display-name')
+    this.displayHandleEl = this.querySelector('#profile-display-handle')
+    this.copyPublicHandleButtonEl = this.querySelector('#copy-public-handle-btn')
     this.saveButtonEl = this.querySelector('button[type="submit"]')
     this.signOutButtonEl = this.querySelector('#profile-sign-out-btn')
     this.deleteAccountButtonEl = this.querySelector('#profile-delete-account-btn')
@@ -94,6 +110,7 @@ export class ProfilePage extends HTMLElement {
     this.signOutButtonEl.addEventListener('click', this.handleSignOut)
     this.deleteAccountButtonEl.addEventListener('click', this.handleDeleteAccount)
     this.badgeModeEl.addEventListener('change', this.handleBadgeModeChange)
+    this.copyPublicHandleButtonEl?.addEventListener('click', this.handleCopyPublicHandle)
 
     const badgeSettings = getBadgeSettings()
     this.badgeModeEl.value = badgeSettings.enabled ? badgeSettings.mode : 'disabled'
@@ -129,6 +146,7 @@ export class ProfilePage extends HTMLElement {
 
       this.emailEl.value = user.email || ''
       this.displayNameEl.value = profile?.display_name || user.user_metadata?.display_name || ''
+      this.updateDisplayHandle(profile)
 
       this.formEl.hidden = false
 
@@ -137,7 +155,8 @@ export class ProfilePage extends HTMLElement {
           detail: {
             profile: profile || {
               email: user.email || '',
-              display_name: user.user_metadata?.display_name || ''
+              display_name: user.user_metadata?.display_name || '',
+              display_tag: profile?.display_tag ?? null
             },
             user
           }
@@ -170,7 +189,8 @@ export class ProfilePage extends HTMLElement {
       const updatedProfile = await saveProfileRecord(supabase, this.user, { displayName })
       this.profile = updatedProfile
       this.displayNameEl.value = updatedProfile.display_name || ''
-      this.statusEl.textContent = `Profile saved for ${updatedProfile.display_name || updatedProfile.email}.`
+      this.updateDisplayHandle(updatedProfile)
+      this.statusEl.textContent = `Profile saved for ${toDisplayHandle(updatedProfile, updatedProfile.email).full}.`
       document.dispatchEvent(
         new CustomEvent('profile-change', {
           detail: {
@@ -280,6 +300,65 @@ export class ProfilePage extends HTMLElement {
     }
 
     document.dispatchEvent(new CustomEvent('badge-settings-change'))
+  }
+
+  updateDisplayHandle(profile) {
+    if (!this.displayHandleEl) {
+      return
+    }
+
+    const fallback = this.user?.email || 'User'
+    const handle = toDisplayHandle(profile, fallback)
+
+    if (handle.tag) {
+      this.displayHandleEl.textContent = `Your public handle: ${handle.full}`
+      if (this.copyPublicHandleButtonEl) {
+        this.copyPublicHandleButtonEl.disabled = false
+      }
+    } else {
+      this.displayHandleEl.textContent = 'Your 4-digit handle tag will be assigned automatically.'
+      if (this.copyPublicHandleButtonEl) {
+        this.copyPublicHandleButtonEl.disabled = true
+      }
+    }
+  }
+
+  async handleCopyPublicHandle() {
+    const handle = toDisplayHandle(this.profile, this.user?.email || 'User')
+    if (!handle.tag) {
+      this.statusEl.textContent = 'Save your profile first to get your public handle tag.'
+      return
+    }
+
+    try {
+      await this.copyTextToClipboard(handle.full)
+      this.statusEl.textContent = 'Public handle copied to clipboard.'
+    } catch (error) {
+      console.error(error)
+      this.statusEl.textContent = 'Could not copy automatically. Please copy your handle manually.'
+    }
+  }
+
+  async copyTextToClipboard(value) {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value)
+      return
+    }
+
+    const textarea = document.createElement('textarea')
+    textarea.value = value
+    textarea.setAttribute('readonly', '')
+    textarea.style.position = 'fixed'
+    textarea.style.top = '-1000px'
+    this.append(textarea)
+    textarea.select()
+
+    const copied = document.execCommand('copy')
+    textarea.remove()
+
+    if (!copied) {
+      throw new Error('Clipboard copy failed.')
+    }
   }
 }
 
