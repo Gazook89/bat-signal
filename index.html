@@ -31,63 +31,65 @@
   </header>
 
   <main id="app"></main>
-  
-  <nav id="main-nav" hidden>
-    <a href="#feed">
-      <svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="Bell--Streamline-Iconoir" height="16" width="16">
-        <desc>
-          Bell Streamline Icon: https://streamlinehq.com
-        </desc>
-        <path d="M11.603000000000002 5.039375000000001c0 -1.1606874999999999 -0.43225 -2.273875 -1.20175 -3.0946249999999997 -0.7694375 -0.8208125 -1.8130625 -1.281875 -2.90125 -1.281875 -1.0881875 0 -2.1318124999999997 0.46106250000000004 -2.90125 1.281875C3.8293125 2.7655000000000003 3.3970000000000002 3.8786875 3.3970000000000002 5.039375000000001c0 5.106000000000001 -2.0515 6.5648125 -2.0515 6.5648125h12.309000000000001s-2.0515 -1.4588124999999998 -2.0515 -6.5648125Z" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
-        <path d="M8.6830625 13.655687499999999c-0.12025 0.20725 -0.29275 0.3793125 -0.5004375 0.498875 -0.207625 0.1195625 -0.443 0.18256250000000002 -0.682625 0.18256250000000002 -0.239625 0 -0.475 -0.063 -0.682625 -0.18256250000000002 -0.2075625 -0.1195625 -0.38018749999999996 -0.291625 -0.500375 -0.498875" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
-      </svg>
-      Feed
-    </a>
-    <a href="#locations">
-      <svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="Map-Pin--Streamline-Iconoir" height="16" width="16">
-        <desc>
-          Map Pin Streamline Icon: https://streamlinehq.com
-        </desc>
-        <path d="M12.96975 6.1325625C12.96975 9.1534375 7.5 14.337187499999999 7.5 14.337187499999999s-5.4697499999999994 -5.18375 -5.4697499999999994 -8.204625c0 -3.020875 2.448875 -5.4697499999999994 5.4697499999999994 -5.4697499999999994 3.020875 0 5.4697499999999994 2.448875 5.4697499999999994 5.4697499999999994Z" stroke="#000000" stroke-width="1"></path>
-        <path d="M7.5 6.81625c0.377625 0 0.6836875 -0.3060625 0.6836875 -0.6836875 0 -0.377625 -0.3060625 -0.6837500000000001 -0.6836875 -0.6837500000000001s-0.6837500000000001 0.306125 -0.6837500000000001 0.6837500000000001c0 0.377625 0.306125 0.6836875 0.6837500000000001 0.6836875Z" fill="#000000" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
-      </svg>
-      My Places</a>
-    <button id="nav-open-signal-composer" type="button">
-      <svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="Antenna--Streamline-Iconoir" height="16" width="16">
-        <desc>
-          Antenna Streamline Icon: https://streamlinehq.com
-        </desc>
-        <path d="M7.5 3.125c0.3451875 0 0.625 -0.279825 0.625 -0.625s-0.2798125 -0.625 -0.625 -0.625 -0.625 0.279825 -0.625 0.625 0.2798125 0.625 0.625 0.625Z" fill="#000000" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
-        <path d="M10 0.625s0.9375 0.625 0.9375 1.875S10 4.375 10 4.375" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
-        <path d="M5 0.625S4.0625 1.25 4.0625 2.5 5 4.375 5 4.375" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
-        <path d="m4.375 14.375 0.69444375 -2.5M10.625 14.375l-0.6944375 -2.5M9.0625 8.75 7.5 3.125l-1.5625 5.625m3.125 0h-3.125m3.125 0 0.8680625 3.125M5.9375 8.75l-0.86805625 3.125m0 0h4.86111875" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
-      </svg>
-      Power On
-    </button>
-    <a href="#friends">
-      <svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="Community--Streamline-Iconoir" height="16" width="16">
-        <desc>
-          Community Streamline Icon: https://streamlinehq.com
-        </desc>
-        <path d="M4.375 11.25v-0.625c0 -1.725875 1.3991124999999998 -3.125 3.125 -3.125v0c1.725875 0 3.125 1.399125 3.125 3.125v0.625" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
-        <path d="M0.625 11.25v-0.625c0 -1.0355625 0.83946875 -1.875 1.875 -1.875v0" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
-        <path d="M14.375 11.25v-0.625c0 -1.0355625 -0.8394375 -1.875 -1.875 -1.875v0" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
-        <path d="M7.5 7.5c1.0355625 0 1.875 -0.8394375 1.875 -1.875 0 -1.03553125 -0.8394375 -1.875 -1.875 -1.875S5.625 4.58946875 5.625 5.625c0 1.0355625 0.8394375 1.875 1.875 1.875Z" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
-        <path d="M2.5 8.75c0.69035625 0 1.25 -0.559625 1.25 -1.25s-0.55964375 -1.25 -1.25 -1.25 -1.25 0.559625 -1.25 1.25 0.55964375 1.25 1.25 1.25Z" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
-        <path d="M12.5 8.75c0.690375 0 1.25 -0.559625 1.25 -1.25s-0.559625 -1.25 -1.25 -1.25 -1.25 0.559625 -1.25 1.25 0.559625 1.25 1.25 1.25Z" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
-      </svg>
-      Friends</a>
-      <a href="#profile">
-        <svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="User-Circle--Streamline-Iconoir" height="16" width="16">
+  <div role="presentation" id="nav-container">
+    <nav id="main-nav" hidden>
+      <a href="#feed">
+        <svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="Bell--Streamline-Iconoir" height="16" width="16">
           <desc>
-            User Circle Streamline Icon: https://streamlinehq.com
+            Bell Streamline Icon: https://streamlinehq.com
           </desc>
-          <path d="M4.0813749999999995 11.6023125v-0.6836875C4.0813749999999995 9.0305625 5.611937500000001 7.5 7.5 7.5h0c1.888 0 3.418625 1.5305625 3.418625 3.418625v0.6836875" stroke="#000000" stroke-linecap="round" stroke-width="1"></path>
-          <path d="M7.5 7.5c1.132875 0 2.0511874999999997 -0.9183125000000001 2.0511874999999997 -2.0511874999999997 0 -1.1328125 -0.9183125000000001 -2.051125 -2.0511874999999997 -2.051125S5.4488125 4.316 5.4488125 5.4488125C5.4488125 6.581687499999999 6.367125 7.5 7.5 7.5Z" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
-          <path stroke="#000000" d="M0.6628125 7.5c0 5.2633125000000005 5.6976249999999995 8.5528125 10.255812500000001 5.9211875 2.1154375 -1.2213125 3.4185624999999997 -3.4785 3.4185624999999997 -5.9211875 0 -5.2633125000000005 -5.6976249999999995 -8.5528125 -10.255812500000001 -5.9211875C1.9659375000000001 2.800125 0.6628125 5.0573125 0.6628125 7.5" stroke-width="1"></path>
+          <path d="M11.603000000000002 5.039375000000001c0 -1.1606874999999999 -0.43225 -2.273875 -1.20175 -3.0946249999999997 -0.7694375 -0.8208125 -1.8130625 -1.281875 -2.90125 -1.281875 -1.0881875 0 -2.1318124999999997 0.46106250000000004 -2.90125 1.281875C3.8293125 2.7655000000000003 3.3970000000000002 3.8786875 3.3970000000000002 5.039375000000001c0 5.106000000000001 -2.0515 6.5648125 -2.0515 6.5648125h12.309000000000001s-2.0515 -1.4588124999999998 -2.0515 -6.5648125Z" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+          <path d="M8.6830625 13.655687499999999c-0.12025 0.20725 -0.29275 0.3793125 -0.5004375 0.498875 -0.207625 0.1195625 -0.443 0.18256250000000002 -0.682625 0.18256250000000002 -0.239625 0 -0.475 -0.063 -0.682625 -0.18256250000000002 -0.2075625 -0.1195625 -0.38018749999999996 -0.291625 -0.500375 -0.498875" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
         </svg>
-        Profile</a>
-  </nav>
+        Feed
+      </a>
+      <a href="#locations">
+        <svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="Map-Pin--Streamline-Iconoir" height="16" width="16">
+          <desc>
+            Map Pin Streamline Icon: https://streamlinehq.com
+          </desc>
+          <path d="M12.96975 6.1325625C12.96975 9.1534375 7.5 14.337187499999999 7.5 14.337187499999999s-5.4697499999999994 -5.18375 -5.4697499999999994 -8.204625c0 -3.020875 2.448875 -5.4697499999999994 5.4697499999999994 -5.4697499999999994 3.020875 0 5.4697499999999994 2.448875 5.4697499999999994 5.4697499999999994Z" stroke="#000000" stroke-width="1"></path>
+          <path d="M7.5 6.81625c0.377625 0 0.6836875 -0.3060625 0.6836875 -0.6836875 0 -0.377625 -0.3060625 -0.6837500000000001 -0.6836875 -0.6837500000000001s-0.6837500000000001 0.306125 -0.6837500000000001 0.6837500000000001c0 0.377625 0.306125 0.6836875 0.6837500000000001 0.6836875Z" fill="#000000" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+        </svg>
+        My Places</a>
+      <button id="nav-open-signal-composer" type="button">
+        <svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="Antenna--Streamline-Iconoir" height="16" width="16">
+          <desc>
+            Antenna Streamline Icon: https://streamlinehq.com
+          </desc>
+          <path d="M7.5 3.125c0.3451875 0 0.625 -0.279825 0.625 -0.625s-0.2798125 -0.625 -0.625 -0.625 -0.625 0.279825 -0.625 0.625 0.2798125 0.625 0.625 0.625Z" fill="#000000" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+          <path d="M10 0.625s0.9375 0.625 0.9375 1.875S10 4.375 10 4.375" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+          <path d="M5 0.625S4.0625 1.25 4.0625 2.5 5 4.375 5 4.375" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+          <path d="m4.375 14.375 0.69444375 -2.5M10.625 14.375l-0.6944375 -2.5M9.0625 8.75 7.5 3.125l-1.5625 5.625m3.125 0h-3.125m3.125 0 0.8680625 3.125M5.9375 8.75l-0.86805625 3.125m0 0h4.86111875" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+        </svg>
+        Power On
+      </button>
+      <a href="#friends">
+        <svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="Community--Streamline-Iconoir" height="16" width="16">
+          <desc>
+            Community Streamline Icon: https://streamlinehq.com
+          </desc>
+          <path d="M4.375 11.25v-0.625c0 -1.725875 1.3991124999999998 -3.125 3.125 -3.125v0c1.725875 0 3.125 1.399125 3.125 3.125v0.625" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+          <path d="M0.625 11.25v-0.625c0 -1.0355625 0.83946875 -1.875 1.875 -1.875v0" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+          <path d="M14.375 11.25v-0.625c0 -1.0355625 -0.8394375 -1.875 -1.875 -1.875v0" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+          <path d="M7.5 7.5c1.0355625 0 1.875 -0.8394375 1.875 -1.875 0 -1.03553125 -0.8394375 -1.875 -1.875 -1.875S5.625 4.58946875 5.625 5.625c0 1.0355625 0.8394375 1.875 1.875 1.875Z" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+          <path d="M2.5 8.75c0.69035625 0 1.25 -0.559625 1.25 -1.25s-0.55964375 -1.25 -1.25 -1.25 -1.25 0.559625 -1.25 1.25 0.55964375 1.25 1.25 1.25Z" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+          <path d="M12.5 8.75c0.690375 0 1.25 -0.559625 1.25 -1.25s-0.559625 -1.25 -1.25 -1.25 -1.25 0.559625 -1.25 1.25 0.559625 1.25 1.25 1.25Z" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+        </svg>
+        Friends</a>
+        <a href="#profile">
+          <svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="User-Circle--Streamline-Iconoir" height="16" width="16">
+            <desc>
+              User Circle Streamline Icon: https://streamlinehq.com
+            </desc>
+            <path d="M4.0813749999999995 11.6023125v-0.6836875C4.0813749999999995 9.0305625 5.611937500000001 7.5 7.5 7.5h0c1.888 0 3.418625 1.5305625 3.418625 3.418625v0.6836875" stroke="#000000" stroke-linecap="round" stroke-width="1"></path>
+            <path d="M7.5 7.5c1.132875 0 2.0511874999999997 -0.9183125000000001 2.0511874999999997 -2.0511874999999997 0 -1.1328125 -0.9183125000000001 -2.051125 -2.0511874999999997 -2.051125S5.4488125 4.316 5.4488125 5.4488125C5.4488125 6.581687499999999 6.367125 7.5 7.5 7.5Z" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+            <path stroke="#000000" d="M0.6628125 7.5c0 5.2633125000000005 5.6976249999999995 8.5528125 10.255812500000001 5.9211875 2.1154375 -1.2213125 3.4185624999999997 -3.4785 3.4185624999999997 -5.9211875 0 -5.2633125000000005 -5.6976249999999995 -8.5528125 -10.255812500000001 -5.9211875C1.9659375000000001 2.800125 0.6628125 5.0573125 0.6628125 7.5" stroke-width="1"></path>
+          </svg>
+          Profile</a>
+    </nav>
+  </div>
+  
 
   <script type="module" src="/src/main.js"></script>
 </body>
