@@ -2,7 +2,7 @@
   "name": "Kid Collider",
   "short_name": "Kid Collider",
   "description": "Play, together.",
-  "start_url": "/index.html",
+  "start_url": "/kid-collider/#",
   "display": "standalone",
   "background_color": "#001e57",
   "theme_color": "#001e57",
