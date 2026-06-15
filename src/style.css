@@ -69,7 +69,12 @@ body {
     background-color: var(--primary-color);
     border-radius: 4px;
   }
+
+
   header {
+    /* Pushes the header content down past the iOS status bar */
+    
+    padding: env(safe-area-inset-top) 5% 0.25rem;
     flex: 0 0 auto;
     h1 {
       font-family: var(--brand-font);
@@ -93,7 +98,6 @@ body {
 }
 
 #app-header {
-  padding: 1rem 5% 0.25rem;
   text-align: left;
 }
 
