@@ -44,7 +44,6 @@ html {
 }
 
 
-
 svg#svg-background {
   position: fixed;
   inset: 0;
@@ -71,7 +70,7 @@ body {
   }
 
 
-  header {
+  header#app-header {
     /* Pushes the header content down past the iOS status bar */
     
     padding: env(safe-area-inset-top) 5% 0.25rem;

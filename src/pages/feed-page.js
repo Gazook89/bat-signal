@@ -529,6 +529,9 @@ export class FeedPage extends HTMLElement {
 
           if (statusEl) {
             statusEl.textContent = 'Your signal was deleted.'
+            setTimeout(() => {
+              statusEl.textContent = ''
+            }, 2000)
           }
 
           document.dispatchEvent(new CustomEvent('signals-visibility-change'))
@@ -641,13 +644,18 @@ export class FeedPage extends HTMLElement {
             </div>
             <div class="list-item-actions">
               <button type="button" data-signal-action="${actionType}" data-signal-id="${signal.id}">
-                <svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="Trash--Streamline-Iconoir" height="16" width="16">
+                ${isOwnSignal ? `<svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="Trash--Streamline-Iconoir" height="16" width="16">
                   <desc>
                     Trash Streamline Icon: https://streamlinehq.com
                   </desc>
                   <path d="m12.96975 5.4488125 -1.3639999999999999 7.75775c-0.1149375 0.6538125 -0.6829375 1.130625 -1.34675 1.130625H4.7410000000000005c-0.663875 0 -1.2318125 -0.47681250000000003 -1.34675 -1.130625L2.03025 5.4488125" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
                   <path d="M13.653500000000001 3.3976875h-3.8459375000000002m-8.461062499999999 0h3.8459375000000002m0 0V2.03025c0 -0.75525 0.61225 -1.3674374999999999 1.3674374999999999 -1.3674374999999999h1.88025c0.75525 0 1.3674374999999999 0.6121875 1.3674374999999999 1.3674374999999999v1.3674374999999999m-4.615125 0h4.615125" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
-                </svg>
+                </svg>` : `<svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" id="Xmark--Streamline-Iconoir" height="16" width="16">
+                <desc>
+                  Xmark Streamline Icon: https://streamlinehq.com
+                </desc>
+                <path d="M1.069875 13.930125 7.5 7.5M13.930125 1.069875 7.5 7.5m0 0L1.069875 1.069875M7.5 7.5l6.430125 6.430125" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+              </svg>`}
               </button>
             </div>
           </article>
