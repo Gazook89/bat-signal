@@ -37,5 +37,11 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Activate Collider",
+      "url": "/#feed"
+    }
   ]
 }
