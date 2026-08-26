@@ -55,7 +55,7 @@ function updateHeader(hash = '') {
   appHeader.classList.remove('header-feed', 'header-subpage', 'header-auth')
   appHeader.classList.add(`header-${config.mode}`)
 
-  brandTitleEl.textContent = 'Kid Collider'
+  brandTitleEl.textContent = 'Collider'
 
   if (config.pageTitle) {
     pageTitleEl.textContent = config.pageTitle

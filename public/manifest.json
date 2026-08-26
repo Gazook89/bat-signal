@@ -1,6 +1,6 @@
 {
-  "name": "Kid Collider",
-  "short_name": "Kid Collider",
+  "name": "Collider",
+  "short_name": "Collider",
   "description": "Play, together.",
   "start_url": "https://gazook89.github.io/kid-collider/",
   "display": "standalone",
