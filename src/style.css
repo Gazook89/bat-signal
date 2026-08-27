@@ -56,7 +56,6 @@ body {
   margin: 0 auto;
   padding: 0;
   min-height: 100dvh; 
-  max-width: 500px;
   display: flex;
   flex-direction: column;
   scrollbar-width: thin;
@@ -88,11 +87,18 @@ body {
   main {
     flex: 1 1 auto;
     margin: 0 auto;
-    width: 90%;
+    width: calc(100vw - 10px);
     mask-image: linear-gradient(to bottom, black 77%, transparent 90%);
+    &:has(auth-page){
+      mask-image: unset;
+    }
     overflow: auto;
-    padding: 0 10px 120px;
-
+    padding: 0 0px 120px;
+    > * {
+      max-width: 500px;
+      display: block;
+      margin: 0 auto;
+    }
   }
 }
 
@@ -171,6 +177,10 @@ nav {
   height: 10vh;
   margin-top: 20px;
   font-family: var(--brand-font);
+  &[hidden] {
+    display: none;
+  }
+  
   a, button {
     padding: 5px 0;
     background: inherit;
@@ -452,4 +462,84 @@ button:has(svg) {
 .danger-button {
   border-color: #e50202;
   color: #e50202;
+}
+
+/* Auth Page Styles */
+.auth-container {
+  max-width: 90%;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.skip-to-signin {
+  text-align: center;
+  margin: 1rem auto 2rem;
+}
+
+a.btn-skip {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+  text-decoration: none;
+  border-radius: 6px;
+  font-family: var(--brand-font);
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.btn-skip:hover {
+  opacity: 0.85;
+}
+
+.app-info {
+  margin-bottom: 3rem;
+}
+
+.app-info h2 {
+  text-align: center;
+  font-family: var(--brand-font);
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  font-weight: 300;
+}
+
+.info-section {
+  margin-bottom: 2rem;
+}
+
+.info-section h3 {
+  font-family: var(--brand-font);
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--primary-color);
+}
+
+.info-section p {
+  line-height: 1.6;
+  margin: 0.5rem 0;
+}
+
+.info-section ul,
+.info-section ol {
+  line-height: 1.6;
+  padding-left: 1.5rem;
+}
+
+.info-section li {
+  margin: 0.5rem 0;
+}
+
+.auth-form-section {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid oklch(from var(--primary-color) calc(l + 0.1) c h / 0.3);
+  scroll-margin-top: 2rem;
+}
+
+.auth-form-section h2 {
+  text-align: center;
+  font-family: var(--brand-font);
+  margin-bottom: 1.5rem;
 }

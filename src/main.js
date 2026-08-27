@@ -222,6 +222,12 @@ const routes = {
     }
   },
   '#feed': async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      window.location.hash = ''
+      return
+    }
+    
     await loadPage('feed-page')
     app.innerHTML = '<feed-page></feed-page>'
     nav.hidden = false
@@ -236,18 +242,36 @@ const routes = {
     }
   },
   '#profile': async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      window.location.hash = ''
+      return
+    }
+    
     await loadPage('profile-page')
     app.innerHTML = '<profile-page></profile-page>'
     nav.hidden = false
     updateHeader('#profile')
   },
   '#locations': async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      window.location.hash = ''
+      return
+    }
+    
     await loadPage('locations-page')
     app.innerHTML = '<locations-page></locations-page>'
     nav.hidden = false
     updateHeader('#locations')
   },
   '#friends': async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      window.location.hash = ''
+      return
+    }
+    
     await loadPage('friends-page')
     app.innerHTML = '<friends-page></friends-page>'
     nav.hidden = false

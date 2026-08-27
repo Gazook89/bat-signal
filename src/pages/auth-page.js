@@ -9,20 +9,67 @@ export class AuthPage extends HTMLElement {
 
   connectedCallback() {
     this.innerHTML = `
-      <h2>Sign In / Sign Up</h2>
-      <form id="auth-form">
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" required autocomplete="email" />
+      <div class="auth-container">
+        <!-- Skip to Sign In Button -->
+        <div class="skip-to-signin">
+          <a href="#signin-form" class="btn-skip">Sign In</a>
         </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" required minlength="6" autocomplete="current-password" />
-        </div>
-        <button id="auth-submit" type="submit">Sign Up / Sign In</button>
-        <p id="auth-error" class="error" role="alert"></p>
-      </form>
-      <p>A new account will be created if one doesn't exist for the provided email, and a confirmation email will hit your inbox shortly.</p>
+
+        <!-- App Information Section -->
+        <section class="app-info">
+          <div class="info-section">
+            <h3>What is Collider?</h3>
+            <p>
+              Collider brings you together with the people you know.  
+            </p>
+            <p>
+              Heading to a neighborhood park and think it would be more fun if someone dropped by? Tired of the rigamarole of coordinating with multiple people on exact plans, and just want to say "Hey, I'm heading here, meet me if interested?"
+            </p>
+            <p>
+              Collider lets you broadcast your availability only to trusted friends with where and when you intend to be active, leaving the planning and communication to the other platforms you already use.
+            </p>
+            <p>  No social media noise, no pressure to engage, only a simple signal to others that you are available.
+            </p>
+          </div>
+
+          <div class="info-section">
+            <h3>Key Features</h3>
+            <ul>
+              <li>Broadcast only.  No Likes, Comments, Messaging.</li>
+              <li>Locations are freeform- specific addresses not needed.</li>
+              <li>Signals are ephemeral and only visible to friends while active.</li>
+            </ul>
+          </div>
+
+          <div class="info-section">
+            <h3>Getting Started</h3>
+            <ol>
+              <li>Register an account.  No user info required beyond email address and password.</li>
+              <li>Connect with friends using their username or email address.  Friends must accept the request before you can see their availability.</li>
+              <li>Power on your Signal to broadcast your availability on the Feed to your friends.  Set your destination, the ETA, how long you want the signal to be up, and a short message.</li>
+            </ol>
+          </div>
+        </section>
+
+        <!-- Sign In / Sign Up Form -->
+        <section id="signin-form" class="auth-form-section">
+          <h2>Sign In / Sign Up</h2>
+          <form id="auth-form">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" required autocomplete="email" />
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" required minlength="6" autocomplete="current-password" />
+            </div>
+            <button id="auth-submit" type="submit">Sign Up / Sign In</button>
+            <p id="auth-error" class="error" role="alert"></p>
+          </form>
+          <p>A new account will be created if one doesn't exist for the provided email, and a confirmation email will hit your inbox shortly.</p>
+          <p>If the link within the confirmation email opens a page in your browser but otherwise seems to do nothing, try coming back to the Sign In page and signing in again.</p>
+        </section>
+      </div>
     `
     this.querySelector('#auth-form').addEventListener('submit', this.handleSubmit)
   }
