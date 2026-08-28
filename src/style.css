@@ -35,12 +35,11 @@ html {
   height: 100vh;
   background-image: url("assets/noise-texture.webp"), url("assets/starburst-1600px.webp");
   background-size: 500px, 1200px;
-  background-position: 50% 50%, right bottom -185px;
+  background-position: 50% 50%, left -604px bottom -188px;
   background-repeat: repeat, no-repeat;
   background-attachment: fixed, inherit;
   background-blend-mode: darken, hard-light;
   overflow: hidden;
-  max-width: 500px;
 }
 
 
@@ -87,17 +86,43 @@ body {
   main {
     flex: 1 1 auto;
     margin: 0 auto;
-    width: calc(100vw - 10px);
     mask-image: linear-gradient(to bottom, black 77%, transparent 90%);
     &:has(auth-page){
       mask-image: unset;
     }
     overflow: auto;
     padding: 0 0px 120px;
-    > * {
-      max-width: 500px;
-      display: block;
-      margin: 0 auto;
+
+    
+    & > * > div {
+      
+      display: grid;
+      grid-template-columns: 1fr min(42rem, 90%) 1fr;
+      > * {
+        grid-column: 2;
+      }
+      .full-bleed {
+        width: 100%;
+        grid-column: 1 / 4;
+      }
+    }
+  }
+}
+
+.gallery {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: safe center;
+  gap: 18px;
+  overflow: auto;
+  .item {
+    flex: 0 1 auto;
+    img {
+      object-fit: contain;
+      height: 400px;
+      border: 1px solid var(--primary-color);
+      border-radius: 12px;
+      padding: 
     }
   }
 }
@@ -215,7 +240,7 @@ nav {
   filter: drop-shadow(0 0 0.35rem rgb(255 214 0 / 0.4));
 }
 
-.list-item-actions {
+.list-item-actions, .signal-actions {
   display: inline-flex;
   gap: 0.5rem;
   button {
@@ -386,7 +411,11 @@ select {
   text-align: left;
   background: oklch(from var(--primary-color) l c h / 0.2);
   display: grid;
+  grid-template-columns: 1fr min-content;
   gap: 0.35rem;
+  button {
+    border-radius: unset;
+  }
 }
 
 .friend-list small,
@@ -466,7 +495,6 @@ button:has(svg) {
 
 /* Auth Page Styles */
 .auth-container {
-  max-width: 90%;
   margin: 0 auto;
   text-align: left;
 }

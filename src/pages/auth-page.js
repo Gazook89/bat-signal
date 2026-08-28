@@ -1,6 +1,7 @@
 import { supabase } from '../supabase.js'
 import { ensureProfileRecord } from '../lib/profile.js'
 
+
 export class AuthPage extends HTMLElement {
   constructor() {
     super()
@@ -16,7 +17,6 @@ export class AuthPage extends HTMLElement {
         </div>
 
         <!-- App Information Section -->
-        <section class="app-info">
           <div class="info-section">
             <h3>What is Collider?</h3>
             <p>
@@ -31,6 +31,20 @@ export class AuthPage extends HTMLElement {
             <p>  No social media noise, no pressure to engage, only a simple signal to others that you are available.
             </p>
           </div>
+
+
+          <div class="gallery">
+            <div class="item">
+              <img src="src/assets/collider_1.jpeg" alt="Collider Gallery Image" />
+            </div>
+            <div class="item">
+              <img src="src/assets/collider_2.jpeg" alt="Collider Gallery Image" />
+            </div>
+            <div class="item">
+              <img src="src/assets/collider_3.jpeg" alt="Collider Gallery Image" />
+            </div>
+          </div>
+
 
           <div class="info-section">
             <h3>Key Features</h3>
@@ -49,7 +63,6 @@ export class AuthPage extends HTMLElement {
               <li>Power on your Signal to broadcast your availability on the Feed to your friends.  Set your destination, the ETA, how long you want the signal to be up, and a short message.</li>
             </ol>
           </div>
-        </section>
 
         <!-- Sign In / Sign Up Form -->
         <section id="signin-form" class="auth-form-section">

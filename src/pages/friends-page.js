@@ -218,7 +218,7 @@ export class FriendsPage extends HTMLElement {
 
     this.renderRelationshipList('#accepted-friends', accepted, (row, otherId) => `
       <div class="signal-actions">
-        <button type="button" data-action="remove-friend" data-id="${row.id}">Remove Friend</button>
+        <button type="button" data-action="remove-friend" data-id="${row.id}">Remove</button>
         <button type="button" data-action="block" data-target-id="${otherId}">Block</button>
       </div>
     `)
@@ -246,13 +246,15 @@ export class FriendsPage extends HTMLElement {
       const profile = this.profileMap.get(otherId)
       const handleMarkup = this.renderHandleMarkup(profile, otherId)
       const secondary = profile?.display_name && profile?.email
-        ? `<small>${this.escapeHtml(profile.email)}</small>`
+        ? `<div><small>${this.escapeHtml(profile.email)}</small></div>`
         : ''
 
       return `
-        <li>
-          ${handleMarkup}
-          ${secondary}
+        <li class="friend-card">
+          <article>
+            ${handleMarkup}
+            ${secondary}
+          </article>
           ${actionsTemplate(row, otherId)}
         </li>
       `
@@ -271,7 +273,7 @@ export class FriendsPage extends HTMLElement {
       return `<strong>${safeBase}</strong>`
     }
 
-    return `<span class="display-handle"><strong>${safeBase}</strong><span class="display-tag">#${handle.tag}</span></span>`
+    return `<div class="display-handle"><strong>${safeBase}</strong><span class="display-tag">#${handle.tag}</span></div>`
   }
 
   parseHandleTerm(term) {
