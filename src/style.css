@@ -413,8 +413,13 @@ select {
   display: grid;
   grid-template-columns: 1fr min-content;
   gap: 0.35rem;
-  button {
-    border-radius: unset;
+  .signal-actions {
+    display: inline-flex;
+    gap: 0.5rem;
+    button {
+      padding: 5px;
+      border-radius: unset;
+    }
   }
 }
 
