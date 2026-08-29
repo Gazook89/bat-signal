@@ -176,9 +176,12 @@ export class FeedPage extends HTMLElement {
   }
 
   handleCancelComposer() {
+    console.log('ope')
     const composer = this.querySelector('#signal-composer')
     const form = this.querySelector('#signal-form')
     const statusEl = this.querySelector('#signal-status')
+
+    console.log(composer);
 
     if (form) {
       form.reset()
@@ -542,7 +545,7 @@ export class FeedPage extends HTMLElement {
 
   render() {
     this.innerHTML = `
-      
+      <div id="feed-page-container">
       <section id="signal-composer" hidden>
         <h3>Activate Collider</h3>
         <form id="signal-form">
@@ -584,6 +587,7 @@ export class FeedPage extends HTMLElement {
       <p id="signals-status" role="status"></p>
       <div id="signals-list" aria-live="polite">
         <p>Loading...</p>
+      </div>
       </div>
     `
   }
