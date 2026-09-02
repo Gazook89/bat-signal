@@ -35,13 +35,13 @@ export class AuthPage extends HTMLElement {
 
           <div class="gallery">
             <div class="item">
-              <img src="src/assets/collider_1.jpeg" alt="Collider Gallery Image" />
+              <img src="src/assets/collider - 1.jpeg" alt="Collider Gallery Image" />
             </div>
             <div class="item">
-              <img src="src/assets/collider_2.jpeg" alt="Collider Gallery Image" />
+              <img src="src/assets/collider - 2.jpeg" alt="Collider Gallery Image" />
             </div>
             <div class="item">
-              <img src="src/assets/collider_3.jpeg" alt="Collider Gallery Image" />
+              <img src="src/assets/collider - 3.jpeg" alt="Collider Gallery Image" />
             </div>
           </div>
 
